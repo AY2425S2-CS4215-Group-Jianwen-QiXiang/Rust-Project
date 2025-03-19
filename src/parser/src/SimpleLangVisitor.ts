@@ -4,7 +4,23 @@ import { AbstractParseTreeVisitor } from "antlr4ng";
 
 
 import { ProgContext } from "./SimpleLangParser.js";
-import { ExpressionContext } from "./SimpleLangParser.js";
+import { SequenceContext } from "./SimpleLangParser.js";
+import { ExprStmtContext } from "./SimpleLangParser.js";
+import { ConstDeclContext } from "./SimpleLangParser.js";
+import { IfStmtContext } from "./SimpleLangParser.js";
+import { WhileStmtContext } from "./SimpleLangParser.js";
+import { BlockContext } from "./SimpleLangParser.js";
+import { NotContext } from "./SimpleLangParser.js";
+import { VariableContext } from "./SimpleLangParser.js";
+import { NumberContext } from "./SimpleLangParser.js";
+import { MulDivContext } from "./SimpleLangParser.js";
+import { AddSubContext } from "./SimpleLangParser.js";
+import { ParensContext } from "./SimpleLangParser.js";
+import { LogicalContext } from "./SimpleLangParser.js";
+import { NegateContext } from "./SimpleLangParser.js";
+import { BooleanContext } from "./SimpleLangParser.js";
+import { LambdaContext } from "./SimpleLangParser.js";
+import { LambdaExprContext } from "./SimpleLangParser.js";
 
 
 /**
@@ -22,10 +38,120 @@ export class SimpleLangVisitor<Result> extends AbstractParseTreeVisitor<Result> 
      */
     visitProg?: (ctx: ProgContext) => Result;
     /**
-     * Visit a parse tree produced by `SimpleLangParser.expression`.
+     * Visit a parse tree produced by `SimpleLangParser.sequence`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitExpression?: (ctx: ExpressionContext) => Result;
+    visitSequence?: (ctx: SequenceContext) => Result;
+    /**
+     * Visit a parse tree produced by the `ExprStmt`
+     * labeled alternative in `SimpleLangParser.stmt`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitExprStmt?: (ctx: ExprStmtContext) => Result;
+    /**
+     * Visit a parse tree produced by the `ConstDecl`
+     * labeled alternative in `SimpleLangParser.stmt`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitConstDecl?: (ctx: ConstDeclContext) => Result;
+    /**
+     * Visit a parse tree produced by the `IfStmt`
+     * labeled alternative in `SimpleLangParser.stmt`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitIfStmt?: (ctx: IfStmtContext) => Result;
+    /**
+     * Visit a parse tree produced by the `WhileStmt`
+     * labeled alternative in `SimpleLangParser.stmt`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitWhileStmt?: (ctx: WhileStmtContext) => Result;
+    /**
+     * Visit a parse tree produced by `SimpleLangParser.block`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitBlock?: (ctx: BlockContext) => Result;
+    /**
+     * Visit a parse tree produced by the `Not`
+     * labeled alternative in `SimpleLangParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitNot?: (ctx: NotContext) => Result;
+    /**
+     * Visit a parse tree produced by the `Variable`
+     * labeled alternative in `SimpleLangParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitVariable?: (ctx: VariableContext) => Result;
+    /**
+     * Visit a parse tree produced by the `Number`
+     * labeled alternative in `SimpleLangParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitNumber?: (ctx: NumberContext) => Result;
+    /**
+     * Visit a parse tree produced by the `MulDiv`
+     * labeled alternative in `SimpleLangParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitMulDiv?: (ctx: MulDivContext) => Result;
+    /**
+     * Visit a parse tree produced by the `AddSub`
+     * labeled alternative in `SimpleLangParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitAddSub?: (ctx: AddSubContext) => Result;
+    /**
+     * Visit a parse tree produced by the `Parens`
+     * labeled alternative in `SimpleLangParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitParens?: (ctx: ParensContext) => Result;
+    /**
+     * Visit a parse tree produced by the `Logical`
+     * labeled alternative in `SimpleLangParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitLogical?: (ctx: LogicalContext) => Result;
+    /**
+     * Visit a parse tree produced by the `Negate`
+     * labeled alternative in `SimpleLangParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitNegate?: (ctx: NegateContext) => Result;
+    /**
+     * Visit a parse tree produced by the `Boolean`
+     * labeled alternative in `SimpleLangParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitBoolean?: (ctx: BooleanContext) => Result;
+    /**
+     * Visit a parse tree produced by the `Lambda`
+     * labeled alternative in `SimpleLangParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitLambda?: (ctx: LambdaContext) => Result;
+    /**
+     * Visit a parse tree produced by `SimpleLangParser.lambdaExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitLambdaExpr?: (ctx: LambdaExprContext) => Result;
 }
 
