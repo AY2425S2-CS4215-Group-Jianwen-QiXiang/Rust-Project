@@ -43,7 +43,7 @@ export class SimpleLangEvaluator extends BasicEvaluator {
             const tree = parser.prog();
             
             // Send the result to the REPL
-            this.conductor.sendOutput(`Result of expression: ${tree}`);
+            this.conductor.sendOutput(`Result of expression: ${tree.toStringTree(parser)}`);
         }  catch (error) {
             // Handle errors and send them to the REPL
             if (error instanceof Error) {
