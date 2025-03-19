@@ -1,38 +1,3 @@
-# using ANTLR with "SourceAcademy Conductor"
-
-## starting point:
-Refer to Sam's repository: https://github.com/tsammeow/conductor-runner-example
-I have forked it and made some configuartion changes to make it work with ANTLR.
-
-## define your grammar
-create a file (say, grammar/SimpleLang.g4) with something like:
-```antlr
-grammar SimpleLang;
-
-prog: expression EOF;
-
-expression
-    : expression op=('+'|'-') expression
-    | expression op=('*'|'/') expression
-    | INT
-    | '(' expression ')'
-    ;
-
-INT: [0-9]+;
-WS: [ \t\r\n]+ -> skip;
-```
-
-## generate parser & visitor
-this repository is already configured to generate the parser and visitor from your grammar. just run:
-
-```bash
-yarn generate-parser
-```
-this spits out your lexer, parser, and a visitor in src/parser/src.
-
-## implement your evaluator with a visitor
-create a new file (e.g. src/SimpleLangEvaluator.ts) that uses the generated parser. for example:
-```typescript
 import { BasicEvaluator } from "conductor/dist/conductor/runner";
 import { IRunnerPlugin } from "conductor/dist/conductor/runner/types";
 import { CharStream, CommonTokenStream, AbstractParseTreeVisitor } from 'antlr4ng';
@@ -127,27 +92,3 @@ export class SimpleLangEvaluator extends BasicEvaluator {
         }
     }
 }
-```
-
-## update your entry point
-change src/index.ts to import your new evaluator:
-```typescript
-import { initialise } from "conductor/dist/conductor/runner/util/";
-import { SimpleLangEvaluator } from "./SimpleLangEvaluator";
-
-const { runnerPlugin, conduit } = initialise(SimpleLangEvaluator);
-```
-
-## bundle into a single js file
-your rollup config (in rollup.config.js) already uses src/index.ts as entry, so just run:
-```bash
-yarn build
-```
-this produces a bundled file at dist/index.js that’s fully conductor-compatible.
-
-## load your evaluator into sourceacademy playground 
-run yarn build. if there are no problems, a file dist/index.js will be generated. this is the file that will be used to run your implementation of the language.
-
-this repository has been configured to automatically build your runner and deploy it to github pages upon pushing to the main branch on github. you should be able to find it at https://{your-username}.github.io/{your-repository}/index.js.
-
-enjoy!
