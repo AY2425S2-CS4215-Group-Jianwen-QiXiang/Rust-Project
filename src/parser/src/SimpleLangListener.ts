@@ -9,6 +9,7 @@ import { ExprStmtContext } from "./SimpleLangParser.js";
 import { ConstDeclContext } from "./SimpleLangParser.js";
 import { IfStmtContext } from "./SimpleLangParser.js";
 import { WhileStmtContext } from "./SimpleLangParser.js";
+import { BlockStmtContext } from "./SimpleLangParser.js";
 import { BlockContext } from "./SimpleLangParser.js";
 import { NotContext } from "./SimpleLangParser.js";
 import { VariableContext } from "./SimpleLangParser.js";
@@ -98,6 +99,18 @@ export class SimpleLangListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitWhileStmt?: (ctx: WhileStmtContext) => void;
+    /**
+     * Enter a parse tree produced by the `BlockStmt`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     */
+    enterBlockStmt?: (ctx: BlockStmtContext) => void;
+    /**
+     * Exit a parse tree produced by the `BlockStmt`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     */
+    exitBlockStmt?: (ctx: BlockStmtContext) => void;
     /**
      * Enter a parse tree produced by `SimpleLangParser.block`.
      * @param ctx the parse tree

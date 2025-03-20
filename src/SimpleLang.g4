@@ -3,12 +3,13 @@ grammar SimpleLang;
 // Parser rules
 prog: sequence EOF;
 
-sequence: (statement | expression | block) (SEPARATOR (statement | expression | block))*;
+sequence: statement+;
 
 statement: expression ';'                           # ExprStmt
-         | 'let' type NAME '=' expression           # ConstDecl
-         | 'if' '(' expression ')' block 'else' block  # IfStmt
+         | 'let' type ':' NAME '=' expression ';'      # ConstDecl
+         | 'if' '(' expression ')' block 'else' block # IfStmt
          | 'while' '(' expression ')' block         # WhileStmt
+         | block   # BlockStmt
          ;
 
 block: '{' sequence '}';
@@ -37,4 +38,4 @@ type: 'int' | 'bool';
 INTEGER: [0-9]+;
 NAME: [a-zA-Z]+;
 BOOLEAN: 'true' | 'false';
-SEPARATOR: [ \t\r\n]+;
+SEPARATOR: [ \t\r\n]+ -> skip;
