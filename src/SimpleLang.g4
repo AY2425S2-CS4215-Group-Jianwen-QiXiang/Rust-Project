@@ -3,7 +3,7 @@ grammar SimpleLang;
 // Parser rules
 prog: sequence EOF;
 
-sequence: (statement | expression)+;
+sequence: (statement | expression) (SEPARATOR (statement | expression))*;
 
 statement: expression ';'                           # ExprStmt
          | 'let' type NAME '=' expression           # ConstDecl
@@ -37,4 +37,4 @@ type: 'int' | 'bool';
 INTEGER: [0-9]+;
 NAME: [a-zA-Z]+;
 BOOLEAN: 'true' | 'false';
-WS: [ \t\r\n]+ -> skip;
+SEPARATOR: [ \t\r\n]+;
