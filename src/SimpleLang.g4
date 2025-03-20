@@ -3,7 +3,7 @@ grammar SimpleLang;
 // Parser rules
 prog: sequence EOF;
 
-sequence: (statement | expression) (WS+ (statement | expression))*;
+sequence: (statement | expression)+;
 
 statement: expression ';'                           # ExprStmt
          | 'let' type NAME '=' expression           # ConstDecl
