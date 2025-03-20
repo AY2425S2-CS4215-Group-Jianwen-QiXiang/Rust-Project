@@ -6,8 +6,8 @@ prog: sequence EOF;
 sequence: (stmt | expr)+;
 
 stmt: expr ';'                           # ExprStmt
-    | 'let' NAME '=' expr                # ConstDecl
-    | 'if' '(' expr ')' block block      # IfStmt
+    | 'let' type NAME '=' expr           # ConstDecl
+    | 'if' '(' expr ')' block 'else' block  # IfStmt
     | 'while' '(' expr ')' block         # WhileStmt
     ;
 
@@ -26,6 +26,7 @@ expr: '-' expr                          # Negate
     ;
 
 lambdaExpr: (NAME*) '=>' block;
+type: 'int' | 'bool';
 
 // Lexer rules
 NUMBER: [0-9]+;

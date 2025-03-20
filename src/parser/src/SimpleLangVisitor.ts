@@ -21,6 +21,7 @@ import { NegateContext } from "./SimpleLangParser.js";
 import { BooleanContext } from "./SimpleLangParser.js";
 import { LambdaContext } from "./SimpleLangParser.js";
 import { LambdaExprContext } from "./SimpleLangParser.js";
+import { TypeContext } from "./SimpleLangParser.js";
 
 
 /**
@@ -153,5 +154,11 @@ export class SimpleLangVisitor<Result> extends AbstractParseTreeVisitor<Result> 
      * @return the visitor result
      */
     visitLambdaExpr?: (ctx: LambdaExprContext) => Result;
+    /**
+     * Visit a parse tree produced by `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitType?: (ctx: TypeContext) => Result;
 }
 

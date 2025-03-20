@@ -21,6 +21,7 @@ import { NegateContext } from "./SimpleLangParser.js";
 import { BooleanContext } from "./SimpleLangParser.js";
 import { LambdaContext } from "./SimpleLangParser.js";
 import { LambdaExprContext } from "./SimpleLangParser.js";
+import { TypeContext } from "./SimpleLangParser.js";
 
 
 /**
@@ -236,6 +237,16 @@ export class SimpleLangListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitLambdaExpr?: (ctx: LambdaExprContext) => void;
+    /**
+     * Enter a parse tree produced by `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    enterType?: (ctx: TypeContext) => void;
+    /**
+     * Exit a parse tree produced by `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    exitType?: (ctx: TypeContext) => void;
 
     visitTerminal(node: TerminalNode): void {}
     visitErrorNode(node: ErrorNode): void {}
