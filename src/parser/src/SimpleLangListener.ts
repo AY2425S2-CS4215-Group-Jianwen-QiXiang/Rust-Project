@@ -12,14 +12,15 @@ import { WhileStmtContext } from "./SimpleLangParser.js";
 import { BlockContext } from "./SimpleLangParser.js";
 import { NotContext } from "./SimpleLangParser.js";
 import { VariableContext } from "./SimpleLangParser.js";
-import { NumberContext } from "./SimpleLangParser.js";
 import { MulDivContext } from "./SimpleLangParser.js";
 import { AddSubContext } from "./SimpleLangParser.js";
 import { ParensContext } from "./SimpleLangParser.js";
+import { LiteralsContext } from "./SimpleLangParser.js";
 import { LogicalContext } from "./SimpleLangParser.js";
 import { NegateContext } from "./SimpleLangParser.js";
-import { BooleanContext } from "./SimpleLangParser.js";
 import { LambdaContext } from "./SimpleLangParser.js";
+import { IntegerContext } from "./SimpleLangParser.js";
+import { BooleanContext } from "./SimpleLangParser.js";
 import { LambdaExprContext } from "./SimpleLangParser.js";
 import { TypeContext } from "./SimpleLangParser.js";
 
@@ -132,18 +133,6 @@ export class SimpleLangListener implements ParseTreeListener {
      */
     exitVariable?: (ctx: VariableContext) => void;
     /**
-     * Enter a parse tree produced by the `Number`
-     * labeled alternative in `SimpleLangParser.expression`.
-     * @param ctx the parse tree
-     */
-    enterNumber?: (ctx: NumberContext) => void;
-    /**
-     * Exit a parse tree produced by the `Number`
-     * labeled alternative in `SimpleLangParser.expression`.
-     * @param ctx the parse tree
-     */
-    exitNumber?: (ctx: NumberContext) => void;
-    /**
      * Enter a parse tree produced by the `MulDiv`
      * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
@@ -180,6 +169,18 @@ export class SimpleLangListener implements ParseTreeListener {
      */
     exitParens?: (ctx: ParensContext) => void;
     /**
+     * Enter a parse tree produced by the `literals`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    enterLiterals?: (ctx: LiteralsContext) => void;
+    /**
+     * Exit a parse tree produced by the `literals`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    exitLiterals?: (ctx: LiteralsContext) => void;
+    /**
      * Enter a parse tree produced by the `Logical`
      * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
@@ -204,18 +205,6 @@ export class SimpleLangListener implements ParseTreeListener {
      */
     exitNegate?: (ctx: NegateContext) => void;
     /**
-     * Enter a parse tree produced by the `Boolean`
-     * labeled alternative in `SimpleLangParser.expression`.
-     * @param ctx the parse tree
-     */
-    enterBoolean?: (ctx: BooleanContext) => void;
-    /**
-     * Exit a parse tree produced by the `Boolean`
-     * labeled alternative in `SimpleLangParser.expression`.
-     * @param ctx the parse tree
-     */
-    exitBoolean?: (ctx: BooleanContext) => void;
-    /**
      * Enter a parse tree produced by the `Lambda`
      * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
@@ -227,6 +216,30 @@ export class SimpleLangListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitLambda?: (ctx: LambdaContext) => void;
+    /**
+     * Enter a parse tree produced by the `integer`
+     * labeled alternative in `SimpleLangParser.literal`.
+     * @param ctx the parse tree
+     */
+    enterInteger?: (ctx: IntegerContext) => void;
+    /**
+     * Exit a parse tree produced by the `integer`
+     * labeled alternative in `SimpleLangParser.literal`.
+     * @param ctx the parse tree
+     */
+    exitInteger?: (ctx: IntegerContext) => void;
+    /**
+     * Enter a parse tree produced by the `boolean`
+     * labeled alternative in `SimpleLangParser.literal`.
+     * @param ctx the parse tree
+     */
+    enterBoolean?: (ctx: BooleanContext) => void;
+    /**
+     * Exit a parse tree produced by the `boolean`
+     * labeled alternative in `SimpleLangParser.literal`.
+     * @param ctx the parse tree
+     */
+    exitBoolean?: (ctx: BooleanContext) => void;
     /**
      * Enter a parse tree produced by `SimpleLangParser.lambdaExpr`.
      * @param ctx the parse tree

@@ -3,7 +3,7 @@ grammar SimpleLang;
 // Parser rules
 prog: sequence EOF;
 
-sequence: (statement | expression)+;
+sequence: (statement | expression) (WS+ (statement | expression))*;
 
 statement: expression ';'                           # ExprStmt
          | 'let' type NAME '=' expression           # ConstDecl
@@ -20,17 +20,21 @@ expression: '-' expression                          # Negate
           | expression ('&&' | '||') expression           # Logical
           | '(' expression ')'                      # Parens
           | lambdaExpr                         # Lambda
-          | BOOLEAN                            # Boolean
-          | NUMBER                             # Number
+          | literal                            # literals
           | NAME                               # Variable
           ;
+
+literal: INTEGER # integer
+       | BOOLEAN # boolean
+       ;
 
 lambdaExpr: (NAME*) '=>' block;
 type: 'int' | 'bool';
 
 
+
 // Lexer rules
-NUMBER: [0-9]+;
+INTEGER: [0-9]+;
 NAME: [a-zA-Z]+;
 BOOLEAN: 'true' | 'false';
 WS: [ \t\r\n]+ -> skip;
