@@ -3,30 +3,31 @@ grammar SimpleLang;
 // Parser rules
 prog: sequence EOF;
 
-sequence: (stmt | expr)+;
+sequence: (statement | expression)+;
 
-stmt: expr ';'                           # ExprStmt
-    | 'let' type NAME '=' expr           # ConstDecl
-    | 'if' '(' expr ')' block 'else' block  # IfStmt
-    | 'while' '(' expr ')' block         # WhileStmt
-    ;
+statement: expression ';'                           # ExprStmt
+         | 'let' type NAME '=' expression           # ConstDecl
+         | 'if' '(' expression ')' block 'else' block  # IfStmt
+         | 'while' '(' expression ')' block         # WhileStmt
+         ;
 
 block: '{' sequence '}';
 
-expr: '-' expr                          # Negate
-    | '!' expr                          # Not
-    | expr ('*' | '/' ) expr            # MulDiv
-    | expr ('+' | '-') expr             # AddSub
-    | expr ('&&' | '||') expr           # Logical
-    | '(' expr ')'                      # Parens
-    | lambdaExpr                         # Lambda
-    | BOOLEAN                            # Boolean
-    | NUMBER                             # Number
-    | NAME                               # Variable
-    ;
+expression: '-' expression                          # Negate
+          | '!' expression                          # Not
+          | expression ('*' | '/' ) expression            # MulDiv
+          | expression ('+' | '-') expression             # AddSub
+          | expression ('&&' | '||') expression           # Logical
+          | '(' expression ')'                      # Parens
+          | lambdaExpr                         # Lambda
+          | BOOLEAN                            # Boolean
+          | NUMBER                             # Number
+          | NAME                               # Variable
+          ;
 
 lambdaExpr: (NAME*) '=>' block;
 type: 'int' | 'bool';
+
 
 // Lexer rules
 NUMBER: [0-9]+;

@@ -55,9 +55,9 @@ WS
 rule names:
 prog
 sequence
-stmt
+statement
 block
-expr
+expression
 lambdaExpr
 type
 

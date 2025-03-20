@@ -51,49 +51,49 @@ export class SimpleLangListener implements ParseTreeListener {
     exitSequence?: (ctx: SequenceContext) => void;
     /**
      * Enter a parse tree produced by the `ExprStmt`
-     * labeled alternative in `SimpleLangParser.stmt`.
+     * labeled alternative in `SimpleLangParser.statement`.
      * @param ctx the parse tree
      */
     enterExprStmt?: (ctx: ExprStmtContext) => void;
     /**
      * Exit a parse tree produced by the `ExprStmt`
-     * labeled alternative in `SimpleLangParser.stmt`.
+     * labeled alternative in `SimpleLangParser.statement`.
      * @param ctx the parse tree
      */
     exitExprStmt?: (ctx: ExprStmtContext) => void;
     /**
      * Enter a parse tree produced by the `ConstDecl`
-     * labeled alternative in `SimpleLangParser.stmt`.
+     * labeled alternative in `SimpleLangParser.statement`.
      * @param ctx the parse tree
      */
     enterConstDecl?: (ctx: ConstDeclContext) => void;
     /**
      * Exit a parse tree produced by the `ConstDecl`
-     * labeled alternative in `SimpleLangParser.stmt`.
+     * labeled alternative in `SimpleLangParser.statement`.
      * @param ctx the parse tree
      */
     exitConstDecl?: (ctx: ConstDeclContext) => void;
     /**
      * Enter a parse tree produced by the `IfStmt`
-     * labeled alternative in `SimpleLangParser.stmt`.
+     * labeled alternative in `SimpleLangParser.statement`.
      * @param ctx the parse tree
      */
     enterIfStmt?: (ctx: IfStmtContext) => void;
     /**
      * Exit a parse tree produced by the `IfStmt`
-     * labeled alternative in `SimpleLangParser.stmt`.
+     * labeled alternative in `SimpleLangParser.statement`.
      * @param ctx the parse tree
      */
     exitIfStmt?: (ctx: IfStmtContext) => void;
     /**
      * Enter a parse tree produced by the `WhileStmt`
-     * labeled alternative in `SimpleLangParser.stmt`.
+     * labeled alternative in `SimpleLangParser.statement`.
      * @param ctx the parse tree
      */
     enterWhileStmt?: (ctx: WhileStmtContext) => void;
     /**
      * Exit a parse tree produced by the `WhileStmt`
-     * labeled alternative in `SimpleLangParser.stmt`.
+     * labeled alternative in `SimpleLangParser.statement`.
      * @param ctx the parse tree
      */
     exitWhileStmt?: (ctx: WhileStmtContext) => void;
@@ -109,121 +109,121 @@ export class SimpleLangListener implements ParseTreeListener {
     exitBlock?: (ctx: BlockContext) => void;
     /**
      * Enter a parse tree produced by the `Not`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     enterNot?: (ctx: NotContext) => void;
     /**
      * Exit a parse tree produced by the `Not`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     exitNot?: (ctx: NotContext) => void;
     /**
      * Enter a parse tree produced by the `Variable`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     enterVariable?: (ctx: VariableContext) => void;
     /**
      * Exit a parse tree produced by the `Variable`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     exitVariable?: (ctx: VariableContext) => void;
     /**
      * Enter a parse tree produced by the `Number`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     enterNumber?: (ctx: NumberContext) => void;
     /**
      * Exit a parse tree produced by the `Number`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     exitNumber?: (ctx: NumberContext) => void;
     /**
      * Enter a parse tree produced by the `MulDiv`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     enterMulDiv?: (ctx: MulDivContext) => void;
     /**
      * Exit a parse tree produced by the `MulDiv`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     exitMulDiv?: (ctx: MulDivContext) => void;
     /**
      * Enter a parse tree produced by the `AddSub`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     enterAddSub?: (ctx: AddSubContext) => void;
     /**
      * Exit a parse tree produced by the `AddSub`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     exitAddSub?: (ctx: AddSubContext) => void;
     /**
      * Enter a parse tree produced by the `Parens`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     enterParens?: (ctx: ParensContext) => void;
     /**
      * Exit a parse tree produced by the `Parens`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     exitParens?: (ctx: ParensContext) => void;
     /**
      * Enter a parse tree produced by the `Logical`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     enterLogical?: (ctx: LogicalContext) => void;
     /**
      * Exit a parse tree produced by the `Logical`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     exitLogical?: (ctx: LogicalContext) => void;
     /**
      * Enter a parse tree produced by the `Negate`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     enterNegate?: (ctx: NegateContext) => void;
     /**
      * Exit a parse tree produced by the `Negate`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     exitNegate?: (ctx: NegateContext) => void;
     /**
      * Enter a parse tree produced by the `Boolean`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     enterBoolean?: (ctx: BooleanContext) => void;
     /**
      * Exit a parse tree produced by the `Boolean`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     exitBoolean?: (ctx: BooleanContext) => void;
     /**
      * Enter a parse tree produced by the `Lambda`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     enterLambda?: (ctx: LambdaContext) => void;
     /**
      * Exit a parse tree produced by the `Lambda`
-     * labeled alternative in `SimpleLangParser.expr`.
+     * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      */
     exitLambda?: (ctx: LambdaContext) => void;

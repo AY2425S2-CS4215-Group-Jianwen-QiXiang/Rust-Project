@@ -38,9 +38,9 @@ export class SimpleLangParser extends antlr.Parser {
     public static readonly WS = 24;
     public static readonly RULE_prog = 0;
     public static readonly RULE_sequence = 1;
-    public static readonly RULE_stmt = 2;
+    public static readonly RULE_statement = 2;
     public static readonly RULE_block = 3;
-    public static readonly RULE_expr = 4;
+    public static readonly RULE_expression = 4;
     public static readonly RULE_lambdaExpr = 5;
     public static readonly RULE_type = 6;
 
@@ -56,7 +56,8 @@ export class SimpleLangParser extends antlr.Parser {
         "NAME", "BOOLEAN", "WS"
     ];
     public static readonly ruleNames = [
-        "prog", "sequence", "stmt", "block", "expr", "lambdaExpr", "type",
+        "prog", "sequence", "statement", "block", "expression", "lambdaExpr", 
+        "type",
     ];
 
     public get grammarFileName(): string { return "SimpleLang.g4"; }
@@ -116,13 +117,13 @@ export class SimpleLangParser extends antlr.Parser {
                 case 1:
                     {
                     this.state = 17;
-                    this.stmt();
+                    this.statement();
                     }
                     break;
                 case 2:
                     {
                     this.state = 18;
-                    this.expr(0);
+                    this.expression(0);
                     }
                     break;
                 }
@@ -146,9 +147,9 @@ export class SimpleLangParser extends antlr.Parser {
         }
         return localContext;
     }
-    public stmt(): StmtContext {
-        let localContext = new StmtContext(this.context, this.state);
-        this.enterRule(localContext, 4, SimpleLangParser.RULE_stmt);
+    public statement(): StatementContext {
+        let localContext = new StatementContext(this.context, this.state);
+        this.enterRule(localContext, 4, SimpleLangParser.RULE_statement);
         try {
             this.state = 46;
             this.errorHandler.sync(this);
@@ -164,7 +165,7 @@ export class SimpleLangParser extends antlr.Parser {
                 this.enterOuterAlt(localContext, 1);
                 {
                 this.state = 23;
-                this.expr(0);
+                this.expression(0);
                 this.state = 24;
                 this.match(SimpleLangParser.T__0);
                 }
@@ -182,7 +183,7 @@ export class SimpleLangParser extends antlr.Parser {
                 this.state = 29;
                 this.match(SimpleLangParser.T__2);
                 this.state = 30;
-                this.expr(0);
+                this.expression(0);
                 }
                 break;
             case SimpleLangParser.T__3:
@@ -194,7 +195,7 @@ export class SimpleLangParser extends antlr.Parser {
                 this.state = 33;
                 this.match(SimpleLangParser.T__4);
                 this.state = 34;
-                this.expr(0);
+                this.expression(0);
                 this.state = 35;
                 this.match(SimpleLangParser.T__5);
                 this.state = 36;
@@ -214,7 +215,7 @@ export class SimpleLangParser extends antlr.Parser {
                 this.state = 41;
                 this.match(SimpleLangParser.T__4);
                 this.state = 42;
-                this.expr(0);
+                this.expression(0);
                 this.state = 43;
                 this.match(SimpleLangParser.T__5);
                 this.state = 44;
@@ -266,19 +267,19 @@ export class SimpleLangParser extends antlr.Parser {
         return localContext;
     }
 
-    public expr(): ExprContext;
-    public expr(_p: number): ExprContext;
-    public expr(_p?: number): ExprContext {
+    public expression(): ExpressionContext;
+    public expression(_p: number): ExpressionContext;
+    public expression(_p?: number): ExpressionContext {
         if (_p === undefined) {
             _p = 0;
         }
 
         let parentContext = this.context;
         let parentState = this.state;
-        let localContext = new ExprContext(this.context, parentState);
+        let localContext = new ExpressionContext(this.context, parentState);
         let previousContext = localContext;
         let _startState = 8;
-        this.enterRecursionRule(localContext, 8, SimpleLangParser.RULE_expr, _p);
+        this.enterRecursionRule(localContext, 8, SimpleLangParser.RULE_expression, _p);
         let _la: number;
         try {
             let alternative: number;
@@ -296,7 +297,7 @@ export class SimpleLangParser extends antlr.Parser {
                 this.state = 53;
                 this.match(SimpleLangParser.T__10);
                 this.state = 54;
-                this.expr(10);
+                this.expression(10);
                 }
                 break;
             case 2:
@@ -307,7 +308,7 @@ export class SimpleLangParser extends antlr.Parser {
                 this.state = 55;
                 this.match(SimpleLangParser.T__11);
                 this.state = 56;
-                this.expr(9);
+                this.expression(9);
                 }
                 break;
             case 3:
@@ -318,7 +319,7 @@ export class SimpleLangParser extends antlr.Parser {
                 this.state = 57;
                 this.match(SimpleLangParser.T__4);
                 this.state = 58;
-                this.expr(0);
+                this.expression(0);
                 this.state = 59;
                 this.match(SimpleLangParser.T__5);
                 }
@@ -376,8 +377,8 @@ export class SimpleLangParser extends antlr.Parser {
                     switch (this.interpreter.adaptivePredict(this.tokenStream, 4, this.context) ) {
                     case 1:
                         {
-                        localContext = new MulDivContext(new ExprContext(parentContext, parentState));
-                        this.pushNewRecursionContext(localContext, _startState, SimpleLangParser.RULE_expr);
+                        localContext = new MulDivContext(new ExpressionContext(parentContext, parentState));
+                        this.pushNewRecursionContext(localContext, _startState, SimpleLangParser.RULE_expression);
                         this.state = 67;
                         if (!(this.precpred(this.context, 8))) {
                             throw this.createFailedPredicateException("this.precpred(this.context, 8)");
@@ -392,13 +393,13 @@ export class SimpleLangParser extends antlr.Parser {
                             this.consume();
                         }
                         this.state = 69;
-                        this.expr(9);
+                        this.expression(9);
                         }
                         break;
                     case 2:
                         {
-                        localContext = new AddSubContext(new ExprContext(parentContext, parentState));
-                        this.pushNewRecursionContext(localContext, _startState, SimpleLangParser.RULE_expr);
+                        localContext = new AddSubContext(new ExpressionContext(parentContext, parentState));
+                        this.pushNewRecursionContext(localContext, _startState, SimpleLangParser.RULE_expression);
                         this.state = 70;
                         if (!(this.precpred(this.context, 7))) {
                             throw this.createFailedPredicateException("this.precpred(this.context, 7)");
@@ -413,13 +414,13 @@ export class SimpleLangParser extends antlr.Parser {
                             this.consume();
                         }
                         this.state = 72;
-                        this.expr(8);
+                        this.expression(8);
                         }
                         break;
                     case 3:
                         {
-                        localContext = new LogicalContext(new ExprContext(parentContext, parentState));
-                        this.pushNewRecursionContext(localContext, _startState, SimpleLangParser.RULE_expr);
+                        localContext = new LogicalContext(new ExpressionContext(parentContext, parentState));
+                        this.pushNewRecursionContext(localContext, _startState, SimpleLangParser.RULE_expression);
                         this.state = 73;
                         if (!(this.precpred(this.context, 6))) {
                             throw this.createFailedPredicateException("this.precpred(this.context, 6)");
@@ -434,7 +435,7 @@ export class SimpleLangParser extends antlr.Parser {
                             this.consume();
                         }
                         this.state = 75;
-                        this.expr(7);
+                        this.expression(7);
                         }
                         break;
                     }
@@ -536,11 +537,11 @@ export class SimpleLangParser extends antlr.Parser {
     public override sempred(localContext: antlr.ParserRuleContext | null, ruleIndex: number, predIndex: number): boolean {
         switch (ruleIndex) {
         case 4:
-            return this.expr_sempred(localContext as ExprContext, predIndex);
+            return this.expression_sempred(localContext as ExpressionContext, predIndex);
         }
         return true;
     }
-    private expr_sempred(localContext: ExprContext | null, predIndex: number): boolean {
+    private expression_sempred(localContext: ExpressionContext | null, predIndex: number): boolean {
         switch (predIndex) {
         case 0:
             return this.precpred(this.context, 8);
@@ -641,23 +642,23 @@ export class SequenceContext extends antlr.ParserRuleContext {
     public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    public stmt(): StmtContext[];
-    public stmt(i: number): StmtContext | null;
-    public stmt(i?: number): StmtContext[] | StmtContext | null {
+    public statement(): StatementContext[];
+    public statement(i: number): StatementContext | null;
+    public statement(i?: number): StatementContext[] | StatementContext | null {
         if (i === undefined) {
-            return this.getRuleContexts(StmtContext);
+            return this.getRuleContexts(StatementContext);
         }
 
-        return this.getRuleContext(i, StmtContext);
+        return this.getRuleContext(i, StatementContext);
     }
-    public expr(): ExprContext[];
-    public expr(i: number): ExprContext | null;
-    public expr(i?: number): ExprContext[] | ExprContext | null {
+    public expression(): ExpressionContext[];
+    public expression(i: number): ExpressionContext | null;
+    public expression(i?: number): ExpressionContext[] | ExpressionContext | null {
         if (i === undefined) {
-            return this.getRuleContexts(ExprContext);
+            return this.getRuleContexts(ExpressionContext);
         }
 
-        return this.getRuleContext(i, ExprContext);
+        return this.getRuleContext(i, ExpressionContext);
     }
     public override get ruleIndex(): number {
         return SimpleLangParser.RULE_sequence;
@@ -682,24 +683,24 @@ export class SequenceContext extends antlr.ParserRuleContext {
 }
 
 
-export class StmtContext extends antlr.ParserRuleContext {
+export class StatementContext extends antlr.ParserRuleContext {
     public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
     public override get ruleIndex(): number {
-        return SimpleLangParser.RULE_stmt;
+        return SimpleLangParser.RULE_statement;
     }
-    public override copyFrom(ctx: StmtContext): void {
+    public override copyFrom(ctx: StatementContext): void {
         super.copyFrom(ctx);
     }
 }
-export class IfStmtContext extends StmtContext {
-    public constructor(ctx: StmtContext) {
+export class IfStmtContext extends StatementContext {
+    public constructor(ctx: StatementContext) {
         super(ctx.parent, ctx.invokingState);
         super.copyFrom(ctx);
     }
-    public expr(): ExprContext {
-        return this.getRuleContext(0, ExprContext)!;
+    public expression(): ExpressionContext {
+        return this.getRuleContext(0, ExpressionContext)!;
     }
     public block(): BlockContext[];
     public block(i: number): BlockContext | null;
@@ -728,13 +729,13 @@ export class IfStmtContext extends StmtContext {
         }
     }
 }
-export class ExprStmtContext extends StmtContext {
-    public constructor(ctx: StmtContext) {
+export class ExprStmtContext extends StatementContext {
+    public constructor(ctx: StatementContext) {
         super(ctx.parent, ctx.invokingState);
         super.copyFrom(ctx);
     }
-    public expr(): ExprContext {
-        return this.getRuleContext(0, ExprContext)!;
+    public expression(): ExpressionContext {
+        return this.getRuleContext(0, ExpressionContext)!;
     }
     public override enterRule(listener: SimpleLangListener): void {
         if(listener.enterExprStmt) {
@@ -754,8 +755,8 @@ export class ExprStmtContext extends StmtContext {
         }
     }
 }
-export class ConstDeclContext extends StmtContext {
-    public constructor(ctx: StmtContext) {
+export class ConstDeclContext extends StatementContext {
+    public constructor(ctx: StatementContext) {
         super(ctx.parent, ctx.invokingState);
         super.copyFrom(ctx);
     }
@@ -765,8 +766,8 @@ export class ConstDeclContext extends StmtContext {
     public NAME(): antlr.TerminalNode {
         return this.getToken(SimpleLangParser.NAME, 0)!;
     }
-    public expr(): ExprContext {
-        return this.getRuleContext(0, ExprContext)!;
+    public expression(): ExpressionContext {
+        return this.getRuleContext(0, ExpressionContext)!;
     }
     public override enterRule(listener: SimpleLangListener): void {
         if(listener.enterConstDecl) {
@@ -786,13 +787,13 @@ export class ConstDeclContext extends StmtContext {
         }
     }
 }
-export class WhileStmtContext extends StmtContext {
-    public constructor(ctx: StmtContext) {
+export class WhileStmtContext extends StatementContext {
+    public constructor(ctx: StatementContext) {
         super(ctx.parent, ctx.invokingState);
         super.copyFrom(ctx);
     }
-    public expr(): ExprContext {
-        return this.getRuleContext(0, ExprContext)!;
+    public expression(): ExpressionContext {
+        return this.getRuleContext(0, ExpressionContext)!;
     }
     public block(): BlockContext {
         return this.getRuleContext(0, BlockContext)!;
@@ -847,24 +848,24 @@ export class BlockContext extends antlr.ParserRuleContext {
 }
 
 
-export class ExprContext extends antlr.ParserRuleContext {
+export class ExpressionContext extends antlr.ParserRuleContext {
     public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
     public override get ruleIndex(): number {
-        return SimpleLangParser.RULE_expr;
+        return SimpleLangParser.RULE_expression;
     }
-    public override copyFrom(ctx: ExprContext): void {
+    public override copyFrom(ctx: ExpressionContext): void {
         super.copyFrom(ctx);
     }
 }
-export class NotContext extends ExprContext {
-    public constructor(ctx: ExprContext) {
+export class NotContext extends ExpressionContext {
+    public constructor(ctx: ExpressionContext) {
         super(ctx.parent, ctx.invokingState);
         super.copyFrom(ctx);
     }
-    public expr(): ExprContext {
-        return this.getRuleContext(0, ExprContext)!;
+    public expression(): ExpressionContext {
+        return this.getRuleContext(0, ExpressionContext)!;
     }
     public override enterRule(listener: SimpleLangListener): void {
         if(listener.enterNot) {
@@ -884,8 +885,8 @@ export class NotContext extends ExprContext {
         }
     }
 }
-export class VariableContext extends ExprContext {
-    public constructor(ctx: ExprContext) {
+export class VariableContext extends ExpressionContext {
+    public constructor(ctx: ExpressionContext) {
         super(ctx.parent, ctx.invokingState);
         super.copyFrom(ctx);
     }
@@ -910,8 +911,8 @@ export class VariableContext extends ExprContext {
         }
     }
 }
-export class NumberContext extends ExprContext {
-    public constructor(ctx: ExprContext) {
+export class NumberContext extends ExpressionContext {
+    public constructor(ctx: ExpressionContext) {
         super(ctx.parent, ctx.invokingState);
         super.copyFrom(ctx);
     }
@@ -936,19 +937,19 @@ export class NumberContext extends ExprContext {
         }
     }
 }
-export class MulDivContext extends ExprContext {
-    public constructor(ctx: ExprContext) {
+export class MulDivContext extends ExpressionContext {
+    public constructor(ctx: ExpressionContext) {
         super(ctx.parent, ctx.invokingState);
         super.copyFrom(ctx);
     }
-    public expr(): ExprContext[];
-    public expr(i: number): ExprContext | null;
-    public expr(i?: number): ExprContext[] | ExprContext | null {
+    public expression(): ExpressionContext[];
+    public expression(i: number): ExpressionContext | null;
+    public expression(i?: number): ExpressionContext[] | ExpressionContext | null {
         if (i === undefined) {
-            return this.getRuleContexts(ExprContext);
+            return this.getRuleContexts(ExpressionContext);
         }
 
-        return this.getRuleContext(i, ExprContext);
+        return this.getRuleContext(i, ExpressionContext);
     }
     public override enterRule(listener: SimpleLangListener): void {
         if(listener.enterMulDiv) {
@@ -968,19 +969,19 @@ export class MulDivContext extends ExprContext {
         }
     }
 }
-export class AddSubContext extends ExprContext {
-    public constructor(ctx: ExprContext) {
+export class AddSubContext extends ExpressionContext {
+    public constructor(ctx: ExpressionContext) {
         super(ctx.parent, ctx.invokingState);
         super.copyFrom(ctx);
     }
-    public expr(): ExprContext[];
-    public expr(i: number): ExprContext | null;
-    public expr(i?: number): ExprContext[] | ExprContext | null {
+    public expression(): ExpressionContext[];
+    public expression(i: number): ExpressionContext | null;
+    public expression(i?: number): ExpressionContext[] | ExpressionContext | null {
         if (i === undefined) {
-            return this.getRuleContexts(ExprContext);
+            return this.getRuleContexts(ExpressionContext);
         }
 
-        return this.getRuleContext(i, ExprContext);
+        return this.getRuleContext(i, ExpressionContext);
     }
     public override enterRule(listener: SimpleLangListener): void {
         if(listener.enterAddSub) {
@@ -1000,13 +1001,13 @@ export class AddSubContext extends ExprContext {
         }
     }
 }
-export class ParensContext extends ExprContext {
-    public constructor(ctx: ExprContext) {
+export class ParensContext extends ExpressionContext {
+    public constructor(ctx: ExpressionContext) {
         super(ctx.parent, ctx.invokingState);
         super.copyFrom(ctx);
     }
-    public expr(): ExprContext {
-        return this.getRuleContext(0, ExprContext)!;
+    public expression(): ExpressionContext {
+        return this.getRuleContext(0, ExpressionContext)!;
     }
     public override enterRule(listener: SimpleLangListener): void {
         if(listener.enterParens) {
@@ -1026,19 +1027,19 @@ export class ParensContext extends ExprContext {
         }
     }
 }
-export class LogicalContext extends ExprContext {
-    public constructor(ctx: ExprContext) {
+export class LogicalContext extends ExpressionContext {
+    public constructor(ctx: ExpressionContext) {
         super(ctx.parent, ctx.invokingState);
         super.copyFrom(ctx);
     }
-    public expr(): ExprContext[];
-    public expr(i: number): ExprContext | null;
-    public expr(i?: number): ExprContext[] | ExprContext | null {
+    public expression(): ExpressionContext[];
+    public expression(i: number): ExpressionContext | null;
+    public expression(i?: number): ExpressionContext[] | ExpressionContext | null {
         if (i === undefined) {
-            return this.getRuleContexts(ExprContext);
+            return this.getRuleContexts(ExpressionContext);
         }
 
-        return this.getRuleContext(i, ExprContext);
+        return this.getRuleContext(i, ExpressionContext);
     }
     public override enterRule(listener: SimpleLangListener): void {
         if(listener.enterLogical) {
@@ -1058,13 +1059,13 @@ export class LogicalContext extends ExprContext {
         }
     }
 }
-export class NegateContext extends ExprContext {
-    public constructor(ctx: ExprContext) {
+export class NegateContext extends ExpressionContext {
+    public constructor(ctx: ExpressionContext) {
         super(ctx.parent, ctx.invokingState);
         super.copyFrom(ctx);
     }
-    public expr(): ExprContext {
-        return this.getRuleContext(0, ExprContext)!;
+    public expression(): ExpressionContext {
+        return this.getRuleContext(0, ExpressionContext)!;
     }
     public override enterRule(listener: SimpleLangListener): void {
         if(listener.enterNegate) {
@@ -1084,8 +1085,8 @@ export class NegateContext extends ExprContext {
         }
     }
 }
-export class BooleanContext extends ExprContext {
-    public constructor(ctx: ExprContext) {
+export class BooleanContext extends ExpressionContext {
+    public constructor(ctx: ExpressionContext) {
         super(ctx.parent, ctx.invokingState);
         super.copyFrom(ctx);
     }
@@ -1110,8 +1111,8 @@ export class BooleanContext extends ExprContext {
         }
     }
 }
-export class LambdaContext extends ExprContext {
-    public constructor(ctx: ExprContext) {
+export class LambdaContext extends ExpressionContext {
+    public constructor(ctx: ExpressionContext) {
         super(ctx.parent, ctx.invokingState);
         super.copyFrom(ctx);
     }
