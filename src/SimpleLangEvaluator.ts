@@ -2,7 +2,31 @@ import { BasicEvaluator } from "conductor/dist/conductor/runner";
 import { IRunnerPlugin } from "conductor/dist/conductor/runner/types";
 import { CharStream, CommonTokenStream, AbstractParseTreeVisitor } from 'antlr4ng';
 import { SimpleLangLexer } from './parser/src/SimpleLangLexer';
-import { ProgContext, SimpleLangParser } from './parser/src/SimpleLangParser';
+import {
+    TypeContext,
+    LambdaExprContext,
+    BooleanContext,
+    IntegerContext,
+    LambdaContext,
+    NegateContext,
+    LogicalContext,
+    LiteralsContext,
+    ParensContext,
+    AddSubContext,
+    MulDivContext,
+    VariableContext,
+    NotContext,
+    BlockContext,
+    BlockStmtContext,
+    WhileStmtContext,
+    ConstDeclContext,
+    ExprStmtContext,
+    IfStmtContext,
+    StatementContext,
+    SequenceContext,
+    ProgContext,
+    SimpleLangParser,
+} from './parser/src/SimpleLangParser';
 import { SimpleLangVisitor } from './parser/src/SimpleLangVisitor';
 
 class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<number> implements SimpleLangVisitor<number> {
