@@ -10,6 +10,7 @@ statement: expression ';'                           # ExprStmt
          | 'if' '(' expression ')' block 'else' block # IfStmt
          | 'while' '(' expression ')' block         # WhileStmt
          | block   # BlockStmt
+         | 'return' expression ';'                  #ReturnStmt
          ;
 
 block: '{' sequence '}';

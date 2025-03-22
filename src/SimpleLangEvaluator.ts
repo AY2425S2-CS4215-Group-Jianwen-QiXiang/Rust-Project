@@ -3,7 +3,7 @@ import { IRunnerPlugin } from "conductor/dist/conductor/runner/types";
 import { CharStream, CommonTokenStream, AbstractParseTreeVisitor } from 'antlr4ng';
 import { SimpleLangLexer } from './parser/src/SimpleLangLexer';
 import {
-    TypeContext,
+    ReturnStmtContext,
     LambdaExprContext,
     BooleanContext,
     IntegerContext,
@@ -64,6 +64,11 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<undefined> imp
         this.visit(ctx.expression())
     }
 
+    visitReturnStmt(ctx: ReturnStmtContext) : undefined {
+        this.visit(ctx.expression())
+        this.instruction[this.wc++] = {tag: "RESET"}
+    }
+
     visitConstDecl(ctx: ConstDeclContext) : undefined {
         let type = ctx.type().getText()
         let name = ctx.NAME().getText()
@@ -105,7 +110,7 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<undefined> imp
 
     visitNot(ctx: NotContext) : undefined {
         this.visit(ctx.expression())
-        this.instruction[this.wc++] = {tag: "UOP", op: "-"}
+        this.instruction[this.wc++] = {tag: "UNOP", op: "!"}
     }
 
     visitVariable(ctx: VariableContext) : undefined {
@@ -115,9 +120,95 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<undefined> imp
     visitMulDiv(ctx: MulDivContext) : undefined {
         this.visit(ctx.expression(0))
         this.visit(ctx.expression(1))
-        this.instruction[this.wc++] = {tag: "MUL", op: "-"}
-
+        let op = ctx.getChild(1).getText()
+        if (op == "*") {
+            this.instruction[this.wc++] = {tag: "BINOP", op: "*"}
+        } else if (op == "/") {
+            this.instruction[this.wc++] = {tag: "BINOP", op: "/"}
+        } else {
+            reportError("unknown operator: " + op);
+        }
     }
+
+    visitAddSub(ctx: AddSubContext): undefined {
+        this.visit(ctx.expression(0))
+        this.visit(ctx.expression(1))
+        let op = ctx.getChild(1).getText()
+        if (op == "+") {
+            this.instruction[this.wc++] = {tag: "BINOP", op: "+"}
+        } else if (op == "-") {
+            this.instruction[this.wc++] = {tag: "BINOP", op: "-"}
+        } else {
+            reportError("unknown operator: " + op);
+        }
+    }
+
+    visitParens(ctx: ParensContext) : undefined {
+        this.visit(ctx.expression())
+    }
+
+    visitLiterals(ctx: LiteralsContext) : undefined {
+        this.visit(ctx.literal())
+    }
+
+    visitLogical(ctx: LogicalContext) : undefined {
+        this.visit(ctx.expression(0))
+        this.visit(ctx.expression(1))
+        let op = ctx.getChild(1).getText()
+        if (op == "&&") {
+            this.instruction[this.wc++] = {tag: "BINOP", op: "&&"}
+        } else if (op == "||") {
+            this.instruction[this.wc++] = {tag: "BINOP", op: "||"}
+        } else {
+            reportError("unknown operator: " + op);
+        }
+    }
+
+    visitNegate(ctx: NegateContext) : undefined {
+        this.visit(ctx.expression())
+        this.instruction[this.wc++] = {tag: "UNOP", op: "-"}
+    }
+
+    visitLambda(ctx: LambdaContext) : undefined {
+        this.visit(ctx.lambdaExpr())
+    }
+
+    visitInteger(ctx: IntegerContext) : undefined {
+        this.instruction[this.wc++] = {tag: "LDC", value: parseInt(ctx.INTEGER().getText())}
+    }
+
+    parseBool(input:string): boolean {
+        if (input == "true") {
+            return true
+        } else if (input == "false") {
+            return false
+        } else {
+            reportError("unknown boolean value: " + input);
+        }
+    }
+    visitBoolean(ctx: BooleanContext) : undefined {
+        this.instruction[this.wc++] = {tag: "LDC", value: this.parseBool(ctx.BOOLEAN().getText())}
+    }
+
+    visitLambdaExpr(ctx: LambdaExprContext) : undefined {
+        this.instruction[this.wc++] = {tag: 'LDF', arity: (ctx.NAME()).length, addr: this.wc + 1};
+        const goto_instruction = {tag: 'GOTO', address: 0}
+        this.instruction[this.wc++] = goto_instruction
+        this.visit(ctx.block())
+        this.instruction[this.wc++] = {tag: 'LDC', val: undefined}
+        this.instruction[this.wc++] = {tag: 'RESET'}
+        goto_instruction.address = this.wc
+    }
+
+    instructions_for_display() : string {
+        let result = ""
+        let i = 0
+        for (const item of this.instruction) {
+            result += (i.toString() + " " + JSON.stringify(item) + "\n")
+        }
+        return result
+    }
+
 
 
 }
@@ -141,6 +232,8 @@ export class SimpleLangEvaluator extends BasicEvaluator {
             
             // Parse the input
             const tree = parser.prog();
+
+
             
             // Send the result to the REPL
             this.conductor.sendOutput(`Result of expression: ${tree.toStringTree(parser)}`);
