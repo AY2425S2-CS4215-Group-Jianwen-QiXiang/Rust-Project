@@ -35,8 +35,8 @@ export class SimpleLangParser extends antlr.Parser {
     public static readonly T__20 = 21;
     public static readonly T__21 = 22;
     public static readonly INTEGER = 23;
-    public static readonly NAME = 24;
-    public static readonly BOOLEAN = 25;
+    public static readonly BOOLEAN = 24;
+    public static readonly NAME = 25;
     public static readonly SEPARATOR = 26;
     public static readonly RULE_prog = 0;
     public static readonly RULE_sequence = 1;
@@ -56,7 +56,7 @@ export class SimpleLangParser extends antlr.Parser {
     public static readonly symbolicNames = [
         null, null, null, null, null, null, null, null, null, null, null, 
         null, null, null, null, null, null, null, null, null, null, null, 
-        null, "INTEGER", "NAME", "BOOLEAN", "SEPARATOR"
+        null, "INTEGER", "BOOLEAN", "NAME", "SEPARATOR"
     ];
     public static readonly ruleNames = [
         "prog", "sequence", "statement", "block", "expression", "literal", 
@@ -150,8 +150,8 @@ export class SimpleLangParser extends antlr.Parser {
             case SimpleLangParser.T__13:
             case SimpleLangParser.T__19:
             case SimpleLangParser.INTEGER:
-            case SimpleLangParser.NAME:
             case SimpleLangParser.BOOLEAN:
+            case SimpleLangParser.NAME:
                 localContext = new ExprStmtContext(localContext);
                 this.enterOuterAlt(localContext, 1);
                 {
@@ -517,7 +517,7 @@ export class SimpleLangParser extends antlr.Parser {
             this.state = 95;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            while (_la === 24) {
+            while (_la === 25) {
                 {
                 {
                 this.state = 92;
@@ -613,7 +613,7 @@ export class SimpleLangParser extends antlr.Parser {
         0,16,17,3,2,1,0,17,18,5,0,0,1,18,1,1,0,0,0,19,21,3,4,2,0,20,19,1,
         0,0,0,21,22,1,0,0,0,22,20,1,0,0,0,22,23,1,0,0,0,23,3,1,0,0,0,24,
         25,3,8,4,0,25,26,5,1,0,0,26,55,1,0,0,0,27,28,5,2,0,0,28,29,3,14,
-        7,0,29,30,5,3,0,0,30,31,5,24,0,0,31,32,5,4,0,0,32,33,3,8,4,0,33,
+        7,0,29,30,5,3,0,0,30,31,5,25,0,0,31,32,5,4,0,0,32,33,3,8,4,0,33,
         34,5,1,0,0,34,55,1,0,0,0,35,36,5,5,0,0,36,37,5,6,0,0,37,38,3,8,4,
         0,38,39,5,7,0,0,39,40,3,6,3,0,40,41,5,8,0,0,41,42,3,6,3,0,42,55,
         1,0,0,0,43,44,5,9,0,0,44,45,5,6,0,0,45,46,3,8,4,0,46,47,5,7,0,0,
@@ -623,14 +623,14 @@ export class SimpleLangParser extends antlr.Parser {
         0,56,57,5,11,0,0,57,58,3,2,1,0,58,59,5,12,0,0,59,7,1,0,0,0,60,61,
         6,4,-1,0,61,62,5,13,0,0,62,73,3,8,4,9,63,64,5,14,0,0,64,73,3,8,4,
         8,65,66,5,6,0,0,66,67,3,8,4,0,67,68,5,7,0,0,68,73,1,0,0,0,69,73,
-        3,12,6,0,70,73,3,10,5,0,71,73,5,24,0,0,72,60,1,0,0,0,72,63,1,0,0,
+        3,12,6,0,70,73,3,10,5,0,71,73,5,25,0,0,72,60,1,0,0,0,72,63,1,0,0,
         0,72,65,1,0,0,0,72,69,1,0,0,0,72,70,1,0,0,0,72,71,1,0,0,0,73,85,
         1,0,0,0,74,75,10,7,0,0,75,76,7,0,0,0,76,84,3,8,4,8,77,78,10,6,0,
         0,78,79,7,1,0,0,79,84,3,8,4,7,80,81,10,5,0,0,81,82,7,2,0,0,82,84,
         3,8,4,6,83,74,1,0,0,0,83,77,1,0,0,0,83,80,1,0,0,0,84,87,1,0,0,0,
         85,83,1,0,0,0,85,86,1,0,0,0,86,9,1,0,0,0,87,85,1,0,0,0,88,91,5,23,
-        0,0,89,91,5,25,0,0,90,88,1,0,0,0,90,89,1,0,0,0,91,11,1,0,0,0,92,
-        94,5,24,0,0,93,92,1,0,0,0,94,97,1,0,0,0,95,93,1,0,0,0,95,96,1,0,
+        0,0,89,91,5,24,0,0,90,88,1,0,0,0,90,89,1,0,0,0,91,11,1,0,0,0,92,
+        94,5,25,0,0,93,92,1,0,0,0,94,97,1,0,0,0,95,93,1,0,0,0,95,96,1,0,
         0,0,96,98,1,0,0,0,97,95,1,0,0,0,98,99,5,20,0,0,99,100,3,6,3,0,100,
         13,1,0,0,0,101,102,7,3,0,0,102,15,1,0,0,0,7,22,54,72,83,85,90,95
     ];

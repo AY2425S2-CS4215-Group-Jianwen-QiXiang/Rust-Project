@@ -35,7 +35,7 @@ lambdaExpr: (NAME*) '=>' block;
 
 // Lexer rules
 INTEGER: [0-9]+;
-NAME: [a-zA-Z]+;
 BOOLEAN: 'true' | 'false';
+NAME: [a-zA-Z]+;
 SEPARATOR: [ \t\r\n]+ -> skip;
 type: 'int' | 'bool';

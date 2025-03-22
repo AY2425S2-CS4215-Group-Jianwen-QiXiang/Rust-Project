@@ -201,10 +201,11 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<undefined> imp
     }
 
     instructions_for_display() : string {
-        let result = ""
+        let result = "\n"
         let i = 0
         for (const item of this.instruction) {
             result += (i.toString() + " " + JSON.stringify(item) + "\n")
+            i++
         }
         return result
     }
