@@ -29,46 +29,96 @@ import {
 } from './parser/src/SimpleLangParser';
 import { SimpleLangVisitor } from './parser/src/SimpleLangVisitor';
 
-class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<string[]> implements SimpleLangVisitor<string[]> {
+class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<undefined> implements SimpleLangVisitor<undefined> {
     // Visit a parse tree produced by SimpleLangParser#prog
-    visitProg(ctx: ProgContext): string[] {
-        let result : string[] = []
-        result.push("Enter Scope")
-        result.concat(this.visit(ctx.sequence()));
-        result.push("Enter Scope")
-        return result;
+    instruction : object[] = []
+    wc : number = 0
+    ce : string[][] = []
+    visitProg(ctx: ProgContext): undefined {
+        this.instruction[this.wc++] = {tag: "Enter Scope"}
+        this.visit(ctx.sequence());
+        this.instruction[this.wc++] = {tag: "Exit Scope"}
+        this.instruction[this.wc++] = {tag: "Done"}
     }
 
-    visitSequence(ctx: SequenceContext) : string[] {
+    visitSequence(ctx: SequenceContext) : undefined {
         let statements = ctx.statement()
-        let result : string[] = []
-        let is_first = true;
-        for (let statement of statements) {
-            if (is_first) {
-                result.concat(this.visit(statement))
-                is_first = false;
-            } else {
-                result.push("Pop")
-                result.concat(this.visit(statement))
+        if (statements.length == 0) {
+            this.instruction[this.wc++] = {tag: "LDC", val: undefined}
+        } else {
+            let is_first = true;
+            for (let statement of statements) {
+                if (is_first) {
+                    this.visit(statement)
+                    is_first = false;
+                } else {
+                    this.instruction[this.wc++] = ({tag: "Pop"})
+                    this.visit(statement)
+                }
             }
         }
-        return result
+
     }
 
-    visitExprStmt(ctx: ExprStmtContext) : string[] {
-        return this.visit(ctx.expression())
+    visitExprStmt(ctx: ExprStmtContext) : undefined {
+        this.visit(ctx.expression())
     }
 
-    visitConstDecl(ctx: ConstDeclContext) : string[] {
-        let result : string[] = []
-        let type = ctx.type().getChild(0)
-        return result
+    visitConstDecl(ctx: ConstDeclContext) : undefined {
+        let type = ctx.type().getText()
+        let name = ctx.NAME().getText()
+        this.visit(ctx.expression());
+        this.instruction[this.wc++] = {tag: "Assignment", name: name, type: type};
+
     }
 
-    visitType(ctx: TypeContext) : string[] {
-        let result: string[] = []
-        return result
+    visitIfStmt(ctx: IfStmtContext) : undefined {
+        this.visit(ctx.expression())
+        let jof_instruction = {tag:"JOF", address: 0}
+        this.instruction[this.wc++] = jof_instruction;
+        this.visit(ctx.block(0))
+        let goto_instruction = {tag:"Goto", address: 0}
+        this.instruction[this.wc++] = goto_instruction
+        jof_instruction.address = this.wc
+        this.visit(ctx.block(1))
+        goto_instruction.address = this.wc
     }
+
+    visitWhileStmt(ctx: WhileStmtContext) : undefined {
+        let loopStart = this.wc
+        this.visit(ctx.expression())
+        let jof_instruction = {tag:"JOF", address: 0}
+        let goto_instruction = {tag:"Goto", address: loopStart}
+        this.instruction[this.wc++] = jof_instruction
+        this.visit(ctx.block())
+        this.instruction[this.wc++] = goto_instruction
+        jof_instruction.address = this.wc
+    }
+
+    visitBlockStmt(ctx: BlockStmtContext) : undefined {
+        this.visit(ctx.block())
+    }
+
+    visitBlock(ctx: BlockContext) : undefined {
+        this.visit(ctx.sequence())
+    }
+
+    visitNot(ctx: NotContext) : undefined {
+        this.visit(ctx.expression())
+        this.instruction[this.wc++] = {tag: "UOP", op: "-"}
+    }
+
+    visitVariable(ctx: VariableContext) : undefined {
+        this.instruction[this.wc++] = {tag: "LD", name: ctx.NAME().getText(), pos : 0}
+    }
+
+    visitMulDiv(ctx: MulDivContext) : undefined {
+        this.visit(ctx.expression(0))
+        this.visit(ctx.expression(1))
+        this.instruction[this.wc++] = {tag: "MUL", op: "-"}
+
+    }
+
 
 }
 
