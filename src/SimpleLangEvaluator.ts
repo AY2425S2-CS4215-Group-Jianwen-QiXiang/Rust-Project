@@ -215,10 +215,12 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<undefined> imp
 
 export class SimpleLangEvaluator extends BasicEvaluator {
     private executionCount: number;
+    private visitor : SimpleLangEvaluatorVisitor;
 
     constructor(conductor: IRunnerPlugin) {
         super(conductor);
         this.executionCount = 0;
+        this.visitor = new SimpleLangEvaluatorVisitor();
     }
 
     async evaluateChunk(chunk: string): Promise<void> {
@@ -229,14 +231,14 @@ export class SimpleLangEvaluator extends BasicEvaluator {
             const lexer = new SimpleLangLexer(inputStream);
             const tokenStream = new CommonTokenStream(lexer);
             const parser = new SimpleLangParser(tokenStream);
-            
+
             // Parse the input
             const tree = parser.prog();
 
+            this.visitor.visit(tree)
 
-            
             // Send the result to the REPL
-            this.conductor.sendOutput(`Result of expression: ${tree.toStringTree(parser)}`);
+            this.conductor.sendOutput(`Result of expression: ${this.visitor.instructions_for_display()}`);
         }  catch (error) {
             // Handle errors and send them to the REPL
             if (error instanceof Error) {
