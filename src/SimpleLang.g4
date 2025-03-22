@@ -30,8 +30,6 @@ literal: INTEGER # integer
        ;
 
 lambdaExpr: (NAME*) '=>' block;
-type: 'int' | 'bool';
-
 
 
 // Lexer rules
@@ -39,3 +37,4 @@ INTEGER: [0-9]+;
 NAME: [a-zA-Z]+;
 BOOLEAN: 'true' | 'false';
 SEPARATOR: [ \t\r\n]+ -> skip;
+type: 'int' | 'bool';
