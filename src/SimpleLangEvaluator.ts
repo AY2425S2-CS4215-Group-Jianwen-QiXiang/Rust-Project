@@ -149,8 +149,10 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<StringMatrixFu
             let goto_instruction = {tag:"Goto", address: loopStart}
             this.instruction[this.wc++] = jof_instruction
             this.visit(ctx.block())(ce)
+            this.instruction[this.wc++] = {tag:"Pop"}
             this.instruction[this.wc++] = goto_instruction
             jof_instruction.address = this.wc
+            this.instruction[this.wc++] = {tag:"literal", value: undefined}
         }
 
     }
