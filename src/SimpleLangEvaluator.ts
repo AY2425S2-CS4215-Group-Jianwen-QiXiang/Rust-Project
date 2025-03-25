@@ -165,7 +165,9 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<StringMatrixFu
         return ce => {
             let vs = this.scan_sequence(ctx.sequence())
             let e = this.compile_time_environment_extend(vs, ce)
-            this.visit(ctx.sequence())(e)
+            this.instruction[this.wc++] = {tag: "Enter Scope"}
+            this.visit(ctx.sequence())(e);
+            this.instruction[this.wc++] = {tag: "Exit Scope"}
         }
     }
 
