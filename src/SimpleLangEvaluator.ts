@@ -40,8 +40,7 @@ type CompileTimeTypeEnvironmentToType = (arg: TypeClosure[][]) => string;
 
 class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeTypeEnvironmentToType> implements SimpleLangVisitor<CompileTimeTypeEnvironmentToType> {
     // Visit a parse tree produced by SimpleLangParser#prog
-    instruction : object[] = []
-    wc : number = 0
+
 
     my_push (array, ...items) {
         for (let item of items) {
@@ -63,21 +62,7 @@ class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeTypeEnvi
                 }
             }
         }
-        reportError(`Unbounded name: ${x}`)
-    }
-
-    compile_time_environment_position (env:string[][], x : string): [number, number] {
-        let frame_index : number = env.length
-        while (this.value_index(env[--frame_index], x) === -1) {}
-        return [frame_index,
-            this.value_index(env[frame_index], x)]
-    }
-
-    value_index (frame: string[], x : string) :number {
-        for (let i = 0; i < Object.keys(frame).length; i++) {
-            if (frame[i] === x) return i
-        }
-        return -1;
+        throw new Error(`Unbounded name: ${x}`)
     }
 
     scan_statement(ctx : StatementContext) : TypeClosure[] {
@@ -108,7 +93,6 @@ class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeTypeEnvi
             if (statements.length == 0) {
                 return "undefined"
             } else {
-                let is_first = true;
                 let result = "undefined"
                 for (let statement of statements) {
                     result = this.visit(statement)(ce)
@@ -137,7 +121,7 @@ class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeTypeEnvi
             if (declared_type == actual_type) {
                 return declared_type
             } else {
-                reportError(`Expected type ${declared_type}, actual type ${actual_type}`)
+                throw new Error(`Expected type ${declared_type}, actual type ${actual_type}`)
             }
         }
     }
@@ -146,12 +130,12 @@ class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeTypeEnvi
         return ce => {
             let predicate_type = this.visit(ctx.expression())(ce)
             if (predicate_type !== "bool") {
-                reportError(`Expect boolean type at predicate, but got ${predicate_type}`)
+                throw new Error(`Expect boolean type at predicate, but got ${predicate_type}`)
             }
             let cons_type = this.visit(ctx.block(0))(ce)
             let alt_type = this.visit(ctx.block(1))(ce)
             if (cons_type !== alt_type) {
-                reportError(`Different types in if statement. Type for consequence: ${cons_type} Type for alternative: ${alt_type}`)
+                throw new Error(`Different types in if statement. Type for consequence: ${cons_type} Type for alternative: ${alt_type}`)
             }
             return cons_type
         }
@@ -162,7 +146,7 @@ class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeTypeEnvi
         return ce => {
             let predicate_type = this.visit(ctx.expression())(ce)
             if (predicate_type !== "bool") {
-                reportError(`Expect boolean type at predicate, but got ${predicate_type}`)
+                throw new Error(`Expect boolean type at predicate, but got ${predicate_type}`)
             }
             this.visit(ctx.block())(ce)
             return "undefined"
@@ -186,7 +170,7 @@ class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeTypeEnvi
         return ce => {
             let op1_type = this.visit(ctx.expression())(ce)
             if (op1_type !== "bool") {
-                reportError(`Expected boolean for !, but got ${op1_type}`)
+                throw new Error(`Expected boolean for !, but got ${op1_type}`)
             }
             return "bool"
         }
@@ -206,7 +190,7 @@ class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeTypeEnvi
             let op2_type = this.visit(ctx.expression(1))(ce)
             let op = ctx.getChild(1).getText()
             if (op1_type !== "int" || op2_type !== "int") {
-                reportError(`Expect two numbers for ${op}, but got ${op1_type} and ${op2_type}`)
+                throw new Error(`Expect two numbers for ${op}, but got ${op1_type} and ${op2_type}`)
             }
             return "int"
         }
@@ -219,7 +203,7 @@ class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeTypeEnvi
             let op2_type = this.visit(ctx.expression(1))(ce)
             let op = ctx.getChild(1).getText()
             if (op1_type !== "int" || op2_type !== "int") {
-                reportError(`Expect two numbers for ${op}, but got ${op1_type} and ${op2_type}`)
+                throw new Error(`Expect two numbers for ${op}, but got ${op1_type} and ${op2_type}`)
             }
             return "int"
         }
@@ -240,7 +224,7 @@ class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeTypeEnvi
             let op2_type = this.visit(ctx.expression(1))(ce)
             let op = ctx.getChild(1).getText()
             if (op1_type !== "bool" || op2_type !== "bool") {
-                reportError(`Expect two booleans for ${op}, but got ${op1_type} and ${op2_type}`)
+                throw new Error(`Expect two booleans for ${op}, but got ${op1_type} and ${op2_type}`)
             }
             return "bool"
         }
@@ -251,7 +235,7 @@ class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeTypeEnvi
         return ce => {
             let op1_type = this.visit(ctx.expression())(ce)
             if (op1_type !== "int") {
-                reportError(`Expected integer for -unary, but got ${op1_type}`)
+                throw new Error(`Expected integer for -unary, but got ${op1_type}`)
             }
             return "int"
         }
@@ -274,18 +258,6 @@ class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeTypeEnvi
         return ce => "function"
 
     }
-
-    instructions_for_display() : string {
-        let result = "\n"
-        let i = 0
-        for (const item of this.instruction) {
-            result += (i.toString() + " " + JSON.stringify(item) + "\n")
-            i++
-        }
-        return result
-    }
-
-
 
 }
 
@@ -312,7 +284,7 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<StringMatrixFu
         let frame_index : number = env.length
         while (this.value_index(env[--frame_index], x) === -1) {
             if(frame_index == 0) {
-                reportError(`Unbounded name: ${x}`)
+                throw new Error(`Unbounded name: ${x}`)
             }
         }
         return [frame_index,
@@ -460,7 +432,7 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<StringMatrixFu
             } else if (op == "/") {
                 this.instruction[this.wc++] = {tag: "BINOP", op: "/"}
             } else {
-                reportError("unknown operator: " + op);
+                throw new Error("unknown operator: " + op);
             }
         }
 
@@ -476,7 +448,7 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<StringMatrixFu
             } else if (op == "-") {
                 this.instruction[this.wc++] = {tag: "BINOP", op: "-"}
             } else {
-                reportError("unknown operator: " + op);
+                throw new Error("unknown operator: " + op);
             }
         }
 
@@ -500,7 +472,7 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<StringMatrixFu
             } else if (op == "||") {
                 this.instruction[this.wc++] = {tag: "BINOP", op: "||"}
             } else {
-                reportError("unknown operator: " + op);
+                throw new Error("unknown operator: " + op);
             }
         }
 
@@ -531,7 +503,7 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<StringMatrixFu
         } else if (input == "false") {
             return false
         } else {
-            reportError("unknown boolean value: " + input);
+            throw new Error("unknown boolean value: " + input);
         }
     }
     visitBoolean(ctx: BooleanContext) : StringMatrixFunction {
