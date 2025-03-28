@@ -56,7 +56,7 @@ class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeTypeEnvi
 
     compile_time_environment_type_look_up (env: TypeClosure[][], x:string) : TypeClosure {
         for (let i = env.length - 1; i >= 0; i--) {
-            for (let j = 0; j < Object.keys(env[i]).length; j--) {
+            for (let j = 0; j < Object.keys(env[i]).length; j++) {
                 if (env[i][j].name == x) {
                     return env[i][j]
                 }
