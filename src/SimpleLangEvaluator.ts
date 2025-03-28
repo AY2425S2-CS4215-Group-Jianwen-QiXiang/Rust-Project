@@ -326,7 +326,7 @@ export class SimpleLangEvaluator extends BasicEvaluator {
             const tree = parser.prog();
 
             let global_ce : string[][] = []
-            this.visitor.visit(tree)([])
+            this.visitor.visit(tree)(global_ce)
 
             // Send the result to the REPL
             this.conductor.sendOutput(`Result of expression: ${this.visitor.instructions_for_display()}`);
