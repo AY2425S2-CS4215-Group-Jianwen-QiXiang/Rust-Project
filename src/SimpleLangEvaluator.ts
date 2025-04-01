@@ -88,6 +88,8 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<StringMatrixFu
     scan_statement(ctx : StatementContext) : string[] {
         if (ctx instanceof ConstDeclContext) {
             return [ctx.NAME().getText()]
+        } else if (ctx instanceof FunctionDeclContext) {
+            return [ctx.NAME()[0].getText()]
         } else {
             return []
         }
