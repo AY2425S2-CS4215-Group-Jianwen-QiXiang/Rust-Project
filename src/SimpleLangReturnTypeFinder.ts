@@ -81,7 +81,7 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
                 parameterTypes[i] = this.visit(types[i])(ce)
             }
             returnType = this.visit(types[types.length - 1])(ce)
-            return [{name : ctx.NAME()[0].getText(), type: "Function", dropped:false,
+            return [{name : ctx.NAME()[0].getText(), type: "function", dropped:false,
                 mutable: false, parameterType: parameterTypes, returnType: returnType}]
         } else {
             return []
@@ -207,7 +207,7 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
             let functionName= ctx.NAME().getText()
             let functionType = this.compile_time_environment_type_look_up(ce, functionName)
             if (functionType.dropped) {
-                throw new Error(`reference to name ${functionName} has been dropped`)
+                throw new Error(`reference to name ${name} has been dropped`)
             }
             if (functionType.type !== "function") {
                 throw new Error(`Call to non-function object : ${functionName} type : ${JSON.stringify(functionType)}`)
