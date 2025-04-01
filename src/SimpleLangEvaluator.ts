@@ -2,7 +2,10 @@ import { BasicEvaluator } from "conductor/dist/conductor/runner";
 import { IRunnerPlugin } from "conductor/dist/conductor/runner/types";
 import { CharStream, CommonTokenStream, AbstractParseTreeVisitor } from 'antlr4ng';
 import { SimpleLangLexer } from './parser/src/SimpleLangLexer';
+import { SimpleLangTypeChecker} from  './SimpleLangTypeChecker'
 import {
+    FunctionAppContext,
+    FunctionDeclContext,
     ReturnStmtContext,
     LambdaExprContext,
     BooleanContext,
@@ -28,238 +31,22 @@ import {
     SimpleLangParser,
 } from './parser/src/SimpleLangParser';
 import { SimpleLangVisitor } from './parser/src/SimpleLangVisitor';
+import {type} from "node:os";
 
+type TypeObject = {
+    type: string;
+    parameterType?: TypeObject[];
+    returnType?: TypeObject;
+};
 
 type TypeClosure = {
     name: string;
     type: string;
-    parameterType?: string[];
-    returnType?: string;
+    dropped : boolean;
+    mutable : boolean;
+    parameterType?: TypeObject[];
+    returnType?: TypeObject;
 };
-type CompileTimeTypeEnvironmentToType = (arg: TypeClosure[][]) => string;
-
-class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeTypeEnvironmentToType> implements SimpleLangVisitor<CompileTimeTypeEnvironmentToType> {
-    // Visit a parse tree produced by SimpleLangParser#prog
-
-
-    my_push (array, ...items) {
-        for (let item of items) {
-            array.push(item)
-        }
-        return array
-    }
-
-    compile_time_environment_extend (vs: TypeClosure[], e: TypeClosure[][]): TypeClosure[][] {
-        //  make shallow copy of e
-        return this.my_push([...e], vs)
-    }
-
-    compile_time_environment_type_look_up (env: TypeClosure[][], x:string) : TypeClosure {
-        for (let i = env.length - 1; i >= 0; i--) {
-            for (let j = 0; j < Object.keys(env[i]).length; j++) {
-                if (env[i][j].name == x) {
-                    return env[i][j]
-                }
-            }
-        }
-        throw new Error(`Unbounded name: ${x}`)
-    }
-
-    scan_statement(ctx : StatementContext) : TypeClosure[] {
-        if (ctx instanceof ConstDeclContext) {
-            return [{name : ctx.NAME().getText(), type: ctx.type().getText()}]
-        } else {
-            return []
-        }
-    }
-
-    scan_sequence(ctx : SequenceContext) : TypeClosure[] {
-        return ctx.statement().reduce((acc, x) => acc.concat(this.scan_statement(x)),
-            [])
-    }
-
-    visitProg(ctx: ProgContext): CompileTimeTypeEnvironmentToType {
-        return cte => {
-            let vs = this.scan_sequence(ctx.sequence())
-            let e = this.compile_time_environment_extend(vs, cte)
-            return this.visit(ctx.sequence())(e);
-        }
-
-    }
-
-    visitSequence(ctx: SequenceContext) : CompileTimeTypeEnvironmentToType {
-        return ce => {
-            let statements = ctx.statement()
-            if (statements.length == 0) {
-                return "undefined"
-            } else {
-                let result = "undefined"
-                for (let statement of statements) {
-                    result = this.visit(statement)(ce)
-                }
-                return result
-            }
-
-        }
-    }
-
-    visitExprStmt(ctx: ExprStmtContext) : CompileTimeTypeEnvironmentToType {
-        return this.visit(ctx.expression())
-    }
-
-    visitReturnStmt(ctx: ReturnStmtContext) : CompileTimeTypeEnvironmentToType {
-        return ce => {
-            return this.visit(ctx.expression())(ce)
-        }
-    }
-
-    visitConstDecl(ctx: ConstDeclContext) : CompileTimeTypeEnvironmentToType {
-        return ce => {
-            let declared_type = ctx.type().getText()
-            let name = ctx.NAME().getText()
-            let actual_type = this.visit(ctx.expression())(ce)
-            if (declared_type == actual_type) {
-                return declared_type
-            } else {
-                throw new Error(`Expected type ${declared_type}, actual type ${actual_type}`)
-            }
-        }
-    }
-
-    visitIfStmt(ctx: IfStmtContext) : CompileTimeTypeEnvironmentToType {
-        return ce => {
-            let predicate_type = this.visit(ctx.expression())(ce)
-            if (predicate_type !== "bool") {
-                throw new Error(`Expect boolean type at predicate, but got ${predicate_type}`)
-            }
-            let cons_type = this.visit(ctx.block(0))(ce)
-            let alt_type = this.visit(ctx.block(1))(ce)
-            if (cons_type !== alt_type) {
-                throw new Error(`Different types in if statement. Type for consequence: ${cons_type} Type for alternative: ${alt_type}`)
-            }
-            return cons_type
-        }
-
-    }
-
-    visitWhileStmt(ctx: WhileStmtContext) : CompileTimeTypeEnvironmentToType {
-        return ce => {
-            let predicate_type = this.visit(ctx.expression())(ce)
-            if (predicate_type !== "bool") {
-                throw new Error(`Expect boolean type at predicate, but got ${predicate_type}`)
-            }
-            this.visit(ctx.block())(ce)
-            return "undefined"
-        }
-
-    }
-
-    visitBlockStmt(ctx: BlockStmtContext) : CompileTimeTypeEnvironmentToType {
-        return this.visit(ctx.block())
-    }
-
-    visitBlock(ctx: BlockContext) : CompileTimeTypeEnvironmentToType {
-        return ce => {
-            let vs = this.scan_sequence(ctx.sequence())
-            let e = this.compile_time_environment_extend(vs, ce)
-            return this.visit(ctx.sequence())(e);
-        }
-    }
-
-    visitNot(ctx: NotContext) : CompileTimeTypeEnvironmentToType {
-        return ce => {
-            let op1_type = this.visit(ctx.expression())(ce)
-            if (op1_type !== "bool") {
-                throw new Error(`Expected boolean for !, but got ${op1_type}`)
-            }
-            return "bool"
-        }
-
-    }
-
-    visitVariable(ctx: VariableContext) : CompileTimeTypeEnvironmentToType {
-        return  ce => {
-            let name = ctx.NAME().getText()
-            return this.compile_time_environment_type_look_up(ce, name).type
-        }
-    }
-
-    visitMulDiv(ctx: MulDivContext) : CompileTimeTypeEnvironmentToType {
-        return ce => {
-            let op1_type = this.visit(ctx.expression(0))(ce)
-            let op2_type = this.visit(ctx.expression(1))(ce)
-            let op = ctx.getChild(1).getText()
-            if (op1_type !== "int" || op2_type !== "int") {
-                throw new Error(`Expect two numbers for ${op}, but got ${op1_type} and ${op2_type}`)
-            }
-            return "int"
-        }
-
-    }
-
-    visitAddSub(ctx: AddSubContext): CompileTimeTypeEnvironmentToType {
-        return ce => {
-            let op1_type = this.visit(ctx.expression(0))(ce)
-            let op2_type = this.visit(ctx.expression(1))(ce)
-            let op = ctx.getChild(1).getText()
-            if (op1_type !== "int" || op2_type !== "int") {
-                throw new Error(`Expect two numbers for ${op}, but got ${op1_type} and ${op2_type}`)
-            }
-            return "int"
-        }
-
-    }
-
-    visitParens(ctx: ParensContext) : CompileTimeTypeEnvironmentToType {
-        return this.visit(ctx.expression())
-    }
-
-    visitLiterals(ctx: LiteralsContext) : CompileTimeTypeEnvironmentToType {
-        return this.visit(ctx.literal())
-    }
-
-    visitLogical(ctx: LogicalContext) : CompileTimeTypeEnvironmentToType {
-        return  ce => {
-            let op1_type = this.visit(ctx.expression(0))(ce)
-            let op2_type = this.visit(ctx.expression(1))(ce)
-            let op = ctx.getChild(1).getText()
-            if (op1_type !== "bool" || op2_type !== "bool") {
-                throw new Error(`Expect two booleans for ${op}, but got ${op1_type} and ${op2_type}`)
-            }
-            return "bool"
-        }
-
-    }
-
-    visitNegate(ctx: NegateContext) : CompileTimeTypeEnvironmentToType {
-        return ce => {
-            let op1_type = this.visit(ctx.expression())(ce)
-            if (op1_type !== "int") {
-                throw new Error(`Expected integer for -unary, but got ${op1_type}`)
-            }
-            return "int"
-        }
-
-    }
-
-    visitLambda(ctx: LambdaContext) : CompileTimeTypeEnvironmentToType {
-        return this.visit(ctx.lambdaExpr())
-    }
-
-    visitInteger(ctx: IntegerContext) : CompileTimeTypeEnvironmentToType {
-        return ce => "int"
-
-    }
-    visitBoolean(ctx: BooleanContext) : CompileTimeTypeEnvironmentToType {
-        return ce => "bool"
-    }
-
-    visitLambdaExpr(ctx: LambdaExprContext) : CompileTimeTypeEnvironmentToType {
-        return ce => "function"
-
-    }
-
-}
 
 type StringMatrixFunction = (arg: string[][]) => undefined;
 

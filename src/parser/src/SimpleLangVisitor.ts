@@ -11,6 +11,8 @@ import { IfStmtContext } from "./SimpleLangParser.js";
 import { WhileStmtContext } from "./SimpleLangParser.js";
 import { BlockStmtContext } from "./SimpleLangParser.js";
 import { ReturnStmtContext } from "./SimpleLangParser.js";
+import { FunctionDeclContext } from "./SimpleLangParser.js";
+import { FunctionAppContext } from "./SimpleLangParser.js";
 import { BlockContext } from "./SimpleLangParser.js";
 import { NotContext } from "./SimpleLangParser.js";
 import { VariableContext } from "./SimpleLangParser.js";
@@ -24,7 +26,9 @@ import { LambdaContext } from "./SimpleLangParser.js";
 import { IntegerContext } from "./SimpleLangParser.js";
 import { BooleanContext } from "./SimpleLangParser.js";
 import { LambdaExprContext } from "./SimpleLangParser.js";
-import { TypeContext } from "./SimpleLangParser.js";
+import { IntTypeContext } from "./SimpleLangParser.js";
+import { BoolTypeContext } from "./SimpleLangParser.js";
+import { FunctionTypeContext } from "./SimpleLangParser.js";
 
 
 /**
@@ -89,6 +93,20 @@ export class SimpleLangVisitor<Result> extends AbstractParseTreeVisitor<Result> 
      * @return the visitor result
      */
     visitReturnStmt?: (ctx: ReturnStmtContext) => Result;
+    /**
+     * Visit a parse tree produced by the `FunctionDecl`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitFunctionDecl?: (ctx: FunctionDeclContext) => Result;
+    /**
+     * Visit a parse tree produced by the `FunctionApp`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitFunctionApp?: (ctx: FunctionAppContext) => Result;
     /**
      * Visit a parse tree produced by `SimpleLangParser.block`.
      * @param ctx the parse tree
@@ -179,10 +197,25 @@ export class SimpleLangVisitor<Result> extends AbstractParseTreeVisitor<Result> 
      */
     visitLambdaExpr?: (ctx: LambdaExprContext) => Result;
     /**
-     * Visit a parse tree produced by `SimpleLangParser.type`.
+     * Visit a parse tree produced by the `IntType`
+     * labeled alternative in `SimpleLangParser.type`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitType?: (ctx: TypeContext) => Result;
+    visitIntType?: (ctx: IntTypeContext) => Result;
+    /**
+     * Visit a parse tree produced by the `BoolType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitBoolType?: (ctx: BoolTypeContext) => Result;
+    /**
+     * Visit a parse tree produced by the `FunctionType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitFunctionType?: (ctx: FunctionTypeContext) => Result;
 }
 

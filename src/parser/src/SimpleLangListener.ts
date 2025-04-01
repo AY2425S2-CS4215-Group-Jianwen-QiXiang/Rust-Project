@@ -11,6 +11,8 @@ import { IfStmtContext } from "./SimpleLangParser.js";
 import { WhileStmtContext } from "./SimpleLangParser.js";
 import { BlockStmtContext } from "./SimpleLangParser.js";
 import { ReturnStmtContext } from "./SimpleLangParser.js";
+import { FunctionDeclContext } from "./SimpleLangParser.js";
+import { FunctionAppContext } from "./SimpleLangParser.js";
 import { BlockContext } from "./SimpleLangParser.js";
 import { NotContext } from "./SimpleLangParser.js";
 import { VariableContext } from "./SimpleLangParser.js";
@@ -24,7 +26,9 @@ import { LambdaContext } from "./SimpleLangParser.js";
 import { IntegerContext } from "./SimpleLangParser.js";
 import { BooleanContext } from "./SimpleLangParser.js";
 import { LambdaExprContext } from "./SimpleLangParser.js";
-import { TypeContext } from "./SimpleLangParser.js";
+import { IntTypeContext } from "./SimpleLangParser.js";
+import { BoolTypeContext } from "./SimpleLangParser.js";
+import { FunctionTypeContext } from "./SimpleLangParser.js";
 
 
 /**
@@ -124,6 +128,30 @@ export class SimpleLangListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitReturnStmt?: (ctx: ReturnStmtContext) => void;
+    /**
+     * Enter a parse tree produced by the `FunctionDecl`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     */
+    enterFunctionDecl?: (ctx: FunctionDeclContext) => void;
+    /**
+     * Exit a parse tree produced by the `FunctionDecl`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     */
+    exitFunctionDecl?: (ctx: FunctionDeclContext) => void;
+    /**
+     * Enter a parse tree produced by the `FunctionApp`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     */
+    enterFunctionApp?: (ctx: FunctionAppContext) => void;
+    /**
+     * Exit a parse tree produced by the `FunctionApp`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     */
+    exitFunctionApp?: (ctx: FunctionAppContext) => void;
     /**
      * Enter a parse tree produced by `SimpleLangParser.block`.
      * @param ctx the parse tree
@@ -277,15 +305,41 @@ export class SimpleLangListener implements ParseTreeListener {
      */
     exitLambdaExpr?: (ctx: LambdaExprContext) => void;
     /**
-     * Enter a parse tree produced by `SimpleLangParser.type`.
+     * Enter a parse tree produced by the `IntType`
+     * labeled alternative in `SimpleLangParser.type`.
      * @param ctx the parse tree
      */
-    enterType?: (ctx: TypeContext) => void;
+    enterIntType?: (ctx: IntTypeContext) => void;
     /**
-     * Exit a parse tree produced by `SimpleLangParser.type`.
+     * Exit a parse tree produced by the `IntType`
+     * labeled alternative in `SimpleLangParser.type`.
      * @param ctx the parse tree
      */
-    exitType?: (ctx: TypeContext) => void;
+    exitIntType?: (ctx: IntTypeContext) => void;
+    /**
+     * Enter a parse tree produced by the `BoolType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    enterBoolType?: (ctx: BoolTypeContext) => void;
+    /**
+     * Exit a parse tree produced by the `BoolType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    exitBoolType?: (ctx: BoolTypeContext) => void;
+    /**
+     * Enter a parse tree produced by the `FunctionType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    enterFunctionType?: (ctx: FunctionTypeContext) => void;
+    /**
+     * Exit a parse tree produced by the `FunctionType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    exitFunctionType?: (ctx: FunctionTypeContext) => void;
 
     visitTerminal(node: TerminalNode): void {}
     visitErrorNode(node: ErrorNode): void {}
