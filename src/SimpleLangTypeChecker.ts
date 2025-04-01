@@ -198,7 +198,8 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             if (this.deepEqual(actualReturnType, declaredReturnType)) {
                 return { type : "function", parameterTypes : declaredParameterTypes, returnTypes : declaredReturnType }
             } else {
-                throw new Error(`Mismatch in return type, expected : ${declaredReturnType}, but got ${actualReturnType}`)
+                throw new Error(`Mismatch in return type, expected : ${JSON.stringify(declaredReturnType)},
+                 but got ${JSON.stringify(actualReturnType)}`)
             }
         }
     }
