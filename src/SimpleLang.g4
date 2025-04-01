@@ -12,7 +12,7 @@ statement: expression ';'                           # ExprStmt
          | block   # BlockStmt
          | 'return' expression ';'                  #ReturnStmt
          | 'fn' NAME '(' (type ':' NAME)* ')' '->' type block # FunctionDecl
-         | NAME '(' expression* ')' #FunctionApp
+         | NAME '(' expression* ')' ';' #FunctionApp
          ;
 
 block: '{' sequence '}';

@@ -206,8 +206,8 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
 
     visitFunctionApp(ctx: FunctionAppContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
-            let functionName= ctx.NAME()[0]
-            let functionType = this.visit(functionName)(ce)
+            let functionName= ctx.NAME().getText()
+            let functionType = this.compile_time_environment_type_look_up(ce, functionName)
             if (functionType.type !== "function") {
                 throw new Error(`Call to non-function object : ${functionName}`)
             } else {
@@ -225,7 +225,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
 
                         } else {
                             throw new Error(`Type mismatch in argument ${i} of call to ${functionName}
-                             Expected ${actualParameterType} type ${expectedParameterType}`)
+                             Expected ${JSON.stringify(actualParameterType)} type ${JSON.stringify(expectedParameterType)}`)
                         }
                     }
                     return functionType.returnType
