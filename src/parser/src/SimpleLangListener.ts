@@ -12,7 +12,6 @@ import { WhileStmtContext } from "./SimpleLangParser.js";
 import { BlockStmtContext } from "./SimpleLangParser.js";
 import { ReturnStmtContext } from "./SimpleLangParser.js";
 import { FunctionDeclContext } from "./SimpleLangParser.js";
-import { FunctionAppContext } from "./SimpleLangParser.js";
 import { BlockContext } from "./SimpleLangParser.js";
 import { NotContext } from "./SimpleLangParser.js";
 import { VariableContext } from "./SimpleLangParser.js";
@@ -22,6 +21,7 @@ import { ParensContext } from "./SimpleLangParser.js";
 import { LiteralsContext } from "./SimpleLangParser.js";
 import { LogicalContext } from "./SimpleLangParser.js";
 import { NegateContext } from "./SimpleLangParser.js";
+import { FunctionAppContext } from "./SimpleLangParser.js";
 import { LambdaContext } from "./SimpleLangParser.js";
 import { IntegerContext } from "./SimpleLangParser.js";
 import { BooleanContext } from "./SimpleLangParser.js";
@@ -141,18 +141,6 @@ export class SimpleLangListener implements ParseTreeListener {
      */
     exitFunctionDecl?: (ctx: FunctionDeclContext) => void;
     /**
-     * Enter a parse tree produced by the `FunctionApp`
-     * labeled alternative in `SimpleLangParser.statement`.
-     * @param ctx the parse tree
-     */
-    enterFunctionApp?: (ctx: FunctionAppContext) => void;
-    /**
-     * Exit a parse tree produced by the `FunctionApp`
-     * labeled alternative in `SimpleLangParser.statement`.
-     * @param ctx the parse tree
-     */
-    exitFunctionApp?: (ctx: FunctionAppContext) => void;
-    /**
      * Enter a parse tree produced by `SimpleLangParser.block`.
      * @param ctx the parse tree
      */
@@ -258,6 +246,18 @@ export class SimpleLangListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitNegate?: (ctx: NegateContext) => void;
+    /**
+     * Enter a parse tree produced by the `FunctionApp`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    enterFunctionApp?: (ctx: FunctionAppContext) => void;
+    /**
+     * Exit a parse tree produced by the `FunctionApp`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    exitFunctionApp?: (ctx: FunctionAppContext) => void;
     /**
      * Enter a parse tree produced by the `Lambda`
      * labeled alternative in `SimpleLangParser.expression`.

@@ -12,7 +12,7 @@ statement: expression ';'                           # ExprStmt
          | block   # BlockStmt
          | 'return' expression ';'                  #ReturnStmt
          | 'fn' NAME '(' (type ':' NAME)* ')' '->' type block # FunctionDecl
-         | NAME '(' expression* ')' ';' #FunctionApp
+
          ;
 
 block: '{' sequence '}';
@@ -23,6 +23,7 @@ expression: '-' expression                          # Negate
           | expression ('+' | '-') expression             # AddSub
           | expression ('&&' | '||') expression           # Logical
           | '(' expression ')'                      # Parens
+          | NAME '(' expression* ')'           #FunctionApp
           | lambdaExpr                         # Lambda
           | literal                            # literals
           | NAME                               # Variable
