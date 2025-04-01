@@ -26,6 +26,12 @@ import {
     SequenceContext,
     ProgContext,
     SimpleLangParser,
+    BorrowContext,
+    MutBorrowContext,
+    DereferenceContext,
+    ExpressionContext,
+    AssignmentContext,
+    MutConstDeclContext,
 } from './parser/src/SimpleLangParser';
 import { SimpleLangVisitor } from './parser/src/SimpleLangVisitor';
 
@@ -33,8 +39,14 @@ import { SimpleLangVisitor } from './parser/src/SimpleLangVisitor';
 type TypeClosure = {
     name: string;
     type: string;
+    ownership?: 'own' | 'moved';
+    borrowState?: {
+        mutableBorrows: number;
+        immutableBorrows: number;
+    };
     parameterType?: string[];
     returnType?: string;
+    mutable?: boolean;
 };
 type CompileTimeTypeEnvironmentToType = (arg: TypeClosure[][]) => string;
 
@@ -180,7 +192,13 @@ class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeTypeEnvi
     visitVariable(ctx: VariableContext) : CompileTimeTypeEnvironmentToType {
         return  ce => {
             let name = ctx.NAME().getText()
-            return this.compile_time_environment_type_look_up(ce, name).type
+            const variable =  this.compile_time_environment_type_look_up(ce, name)
+            if (variable.borrowState) {
+                if (variable.borrowState.mutableBorrows > 0) {
+                    throw new Error(`Cannot use '${name}' because it is mutably borrowed`);
+                }
+            }
+            return variable.type
         }
     }
 
@@ -259,6 +277,137 @@ class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeTypeEnvi
 
     }
 
+    visitBorrow(ctx: BorrowContext): CompileTimeTypeEnvironmentToType {
+        return ce => {
+            if (ctx.expression() instanceof VariableContext) {
+                const name = (ctx.expression() as VariableContext).NAME().getText();
+                const variable = this.compile_time_environment_type_look_up(ce, name);
+                
+                // Initialize borrow state if needed
+                if (!variable.borrowState) {
+                    variable.borrowState = { mutableBorrows: 0, immutableBorrows: 0 };
+                }
+                
+                // Cannot create immutable borrow if mutable borrows exist
+                if (variable.borrowState.mutableBorrows > 0) {
+                    throw new Error(`Cannot borrow '${name}' as immutable because it is also borrowed as mutable`);
+                }
+                
+                // Track the immutable borrow
+                variable.borrowState.immutableBorrows++;
+            }
+            
+            const innerType = this.visit(ctx.expression())(ce);
+            return `&${innerType}`;
+        };
+    }
+
+    visitMutBorrow(ctx: MutBorrowContext): CompileTimeTypeEnvironmentToType {
+        return ce => {
+            if (ctx.expression() instanceof VariableContext) {
+                const name = (ctx.expression() as VariableContext).NAME().getText();
+                const variable = this.compile_time_environment_type_look_up(ce, name);
+                if (!variable.mutable) {
+                    throw new Error(`Cannot mutably borrow immutable variable '${name}'`);
+                }
+
+                if (!variable.borrowState) {
+                    variable.borrowState = { mutableBorrows: 0, immutableBorrows: 0 };
+                }
+
+                // Cannot create mutable borrow if any borrows exist
+                if (variable.borrowState.mutableBorrows > 0) {
+                    throw new Error(`Cannot borrow '${name}' as mutable more than once at a time`);
+                }
+                
+                if (variable.borrowState.immutableBorrows > 0) {
+                    throw new Error(`Cannot borrow '${name}' as mutable because it is also borrowed as immutable`);
+                }
+
+                variable.borrowState.mutableBorrows++;
+            }
+
+            let innerType = this.visit(ctx.expression())(ce);
+            // Check if the inner expression can be mutably borrowed
+            if (innerType.startsWith('&')) {
+                throw new Error('Cannot borrow a reference as mutable');
+            }
+            return `&mut ${innerType}`;
+        };
+    }
+
+    // Helper to check if expression is on the left side of an assignment
+    isAssignmentTarget(ctx: ExpressionContext): boolean {
+        const parent = ctx.parent;
+        // Check if this expression is the left-hand side of an assignment
+        return parent instanceof AssignmentContext && parent.expression() === ctx;
+    }
+
+    visitDereference(ctx: DereferenceContext): CompileTimeTypeEnvironmentToType {
+        return ce => {
+            const innerType = this.visit(ctx.expression())(ce);
+            
+            // Check if the expression is a reference type
+            if (!innerType.startsWith('&')) {
+                throw new Error(`Cannot dereference non-reference type '${innerType}'`);
+            }
+            
+            // Extract the base type (remove the reference)
+            const baseType = innerType.replace(/^&(mut )?/, '');
+            
+            // Check if this is an assignment target
+            const isAssignmentTarget = this.isAssignmentTarget(ctx);
+            
+            // If it's an assignment target, ensure the reference is mutable
+            if (isAssignmentTarget && !innerType.includes('mut')) {
+                throw new Error(`Cannot modify through an immutable reference`);
+            }
+            
+            return baseType;
+        };
+    }
+
+    visitAssignment(ctx: AssignmentContext): CompileTimeTypeEnvironmentToType {
+        return ce => {
+            const name = ctx.NAME().getText();
+            const variable = this.compile_time_environment_type_look_up(ce, name);
+            
+            if (!variable.mutable) {
+                throw new Error(`Cannot assign to immutable variable '${name}'`);
+            }
+            
+            const rightType = this.visit(ctx.expression())(ce);
+            if (variable.type !== rightType) {
+                throw new Error(`Type mismatch: expected '${variable.type}', found '${rightType}'`);
+            }
+            
+            // If the right side is a variable, mark it as moved
+            if (ctx.expression() instanceof VariableContext) {
+                const rightName = (ctx.expression() as VariableContext).NAME().getText();
+                const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
+                
+                // Only move if it's not a reference
+                if (!rightVar.type.startsWith('&')) {
+                    rightVar.ownership = 'moved';
+                }
+            }
+            
+            return variable.type;
+        }
+    }
+    
+    visitMutConstDecl(ctx: MutConstDeclContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            let declared_type = ctx.type().getText()
+            let name = ctx.NAME().getText()
+            let actual_type = this.visit(ctx.expression())(ce)
+            if (declared_type == actual_type) {
+                return declared_type
+            } else {
+                throw new Error(`Expected type ${declared_type}, actual type ${actual_type}`)
+            }
+        }
+    }
 }
 
 type StringMatrixFunction = (arg: string[][]) => undefined;
@@ -537,6 +686,69 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<StringMatrixFu
 
 
 
+}
+
+export class Parser {
+    private lexer: SimpleLangLexer;
+    private parser: SimpleLangParser;
+    private inputStream: CharStream;
+    private tokenStream: CommonTokenStream;
+
+    constructor(str : string) {
+        this.inputStream = CharStream.fromString(str);
+        this.lexer = new SimpleLangLexer(this.inputStream);
+        this.tokenStream = new CommonTokenStream(this.lexer);
+        this.parser = new SimpleLangParser(this.tokenStream);
+    }
+
+    public parse(): ProgContext {
+        return this.parser.prog();
+    }
+}
+
+export class Evaluator {
+    private executionCount: number;
+    private visitor : SimpleLangEvaluatorVisitor;
+    private typeChecker: SimpleLangTypeChecker;
+
+    constructor() {
+        this.executionCount = 0;
+        this.visitor = new SimpleLangEvaluatorVisitor();
+        this.typeChecker = new SimpleLangTypeChecker()
+    }
+
+    public typeCheck(str : string): string{
+        this.executionCount++;
+        
+
+        // Parse the input
+        const tree = (new Parser(str)).parse();
+
+        console.log(tree.toStringTree())
+
+        let global_ce : string[][] = []
+        let global_type_ce : TypeClosure[][] = []
+        return this.typeChecker.visit(tree)(global_type_ce)
+    }
+
+    public evaluate(str : string): string{
+        this.executionCount++;
+        
+
+        // Parse the input
+        const tree = (new Parser(str)).parse();
+
+        console.log(tree.toStringTree())
+
+        let global_ce : string[][] = []
+        let global_type_ce : TypeClosure[][] = []
+        console.log(this.typeChecker.visit(tree)(global_type_ce))
+        this.visitor.visit(tree)(global_ce)
+
+        // Send the result to the REPL
+        return this.visitor.instructions_for_display()
+    }
+    
 }
 
 export class SimpleLangEvaluator extends BasicEvaluator {

@@ -11,9 +11,13 @@ import { IfStmtContext } from "./SimpleLangParser.js";
 import { WhileStmtContext } from "./SimpleLangParser.js";
 import { BlockStmtContext } from "./SimpleLangParser.js";
 import { ReturnStmtContext } from "./SimpleLangParser.js";
+import { MutConstDeclContext } from "./SimpleLangParser.js";
+import { AssignmentContext } from "./SimpleLangParser.js";
 import { BlockContext } from "./SimpleLangParser.js";
 import { NotContext } from "./SimpleLangParser.js";
+import { MutBorrowContext } from "./SimpleLangParser.js";
 import { VariableContext } from "./SimpleLangParser.js";
+import { BorrowContext } from "./SimpleLangParser.js";
 import { MulDivContext } from "./SimpleLangParser.js";
 import { AddSubContext } from "./SimpleLangParser.js";
 import { ParensContext } from "./SimpleLangParser.js";
@@ -21,6 +25,7 @@ import { LiteralsContext } from "./SimpleLangParser.js";
 import { LogicalContext } from "./SimpleLangParser.js";
 import { NegateContext } from "./SimpleLangParser.js";
 import { LambdaContext } from "./SimpleLangParser.js";
+import { DereferenceContext } from "./SimpleLangParser.js";
 import { IntegerContext } from "./SimpleLangParser.js";
 import { BooleanContext } from "./SimpleLangParser.js";
 import { LambdaExprContext } from "./SimpleLangParser.js";
@@ -125,6 +130,30 @@ export class SimpleLangListener implements ParseTreeListener {
      */
     exitReturnStmt?: (ctx: ReturnStmtContext) => void;
     /**
+     * Enter a parse tree produced by the `MutConstDecl`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     */
+    enterMutConstDecl?: (ctx: MutConstDeclContext) => void;
+    /**
+     * Exit a parse tree produced by the `MutConstDecl`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     */
+    exitMutConstDecl?: (ctx: MutConstDeclContext) => void;
+    /**
+     * Enter a parse tree produced by the `Assignment`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     */
+    enterAssignment?: (ctx: AssignmentContext) => void;
+    /**
+     * Exit a parse tree produced by the `Assignment`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     */
+    exitAssignment?: (ctx: AssignmentContext) => void;
+    /**
      * Enter a parse tree produced by `SimpleLangParser.block`.
      * @param ctx the parse tree
      */
@@ -147,6 +176,18 @@ export class SimpleLangListener implements ParseTreeListener {
      */
     exitNot?: (ctx: NotContext) => void;
     /**
+     * Enter a parse tree produced by the `MutBorrow`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    enterMutBorrow?: (ctx: MutBorrowContext) => void;
+    /**
+     * Exit a parse tree produced by the `MutBorrow`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    exitMutBorrow?: (ctx: MutBorrowContext) => void;
+    /**
      * Enter a parse tree produced by the `Variable`
      * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
@@ -158,6 +199,18 @@ export class SimpleLangListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitVariable?: (ctx: VariableContext) => void;
+    /**
+     * Enter a parse tree produced by the `Borrow`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    enterBorrow?: (ctx: BorrowContext) => void;
+    /**
+     * Exit a parse tree produced by the `Borrow`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    exitBorrow?: (ctx: BorrowContext) => void;
     /**
      * Enter a parse tree produced by the `MulDiv`
      * labeled alternative in `SimpleLangParser.expression`.
@@ -242,6 +295,18 @@ export class SimpleLangListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitLambda?: (ctx: LambdaContext) => void;
+    /**
+     * Enter a parse tree produced by the `Dereference`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    enterDereference?: (ctx: DereferenceContext) => void;
+    /**
+     * Exit a parse tree produced by the `Dereference`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    exitDereference?: (ctx: DereferenceContext) => void;
     /**
      * Enter a parse tree produced by the `integer`
      * labeled alternative in `SimpleLangParser.literal`.

@@ -11,6 +11,8 @@ statement: expression ';'                           # ExprStmt
          | 'while' '(' expression ')' block         # WhileStmt
          | block   # BlockStmt
          | 'return' expression ';'                  #ReturnStmt
+         | 'let' 'mut' type ':' NAME '=' expression ';' # MutConstDecl
+         | NAME '=' expression ';'                     # Assignment
          ;
 
 block: '{' sequence '}';
@@ -24,6 +26,9 @@ expression: '-' expression                          # Negate
           | lambdaExpr                         # Lambda
           | literal                            # literals
           | NAME                               # Variable
+          | '&' expression                      # Borrow
+          | '&mut' expression                   # MutBorrow
+          | '*' expression                      # Dereference
           ;
 
 literal: INTEGER # integer
@@ -38,4 +43,5 @@ INTEGER: [0-9]+;
 BOOLEAN: 'true' | 'false';
 NAME: [a-zA-Z]+;
 SEPARATOR: [ \t\r\n]+ -> skip;
-type: 'int' | 'bool';
+
+type: '&'? 'int'  | '&'? 'bool';
