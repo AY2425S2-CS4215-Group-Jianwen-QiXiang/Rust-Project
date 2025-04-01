@@ -34,7 +34,6 @@ import {
 import { SimpleLangVisitor } from './parser/src/SimpleLangVisitor';
 import {type} from "node:os";
 
-
 type TypeObject = {
     type: string;
     parameterType?: TypeObject[];
@@ -194,7 +193,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                 declaredParameterTypes[i] = this.visit(types[i])(ce)
             }
             declaredReturnType = this.visit(types[types.length - 1])(ce)
-            let actualReturnType = this.returnTypeFinder.visit(ctx)(ce)
+            let actualReturnType = this.returnTypeFinder.visit(ctx.block())(ce)
 
             if (this.deepEqual(actualReturnType, declaredReturnType)) {
                 return { type : "function", parameterTypes : declaredParameterTypes, returnTypes : declaredReturnType }

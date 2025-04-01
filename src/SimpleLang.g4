@@ -11,7 +11,7 @@ statement: expression ';'                           # ExprStmt
          | 'while' '(' expression ')' block         # WhileStmt
          | block   # BlockStmt
          | 'return' expression ';'                  #ReturnStmt
-         | 'fn' NAME '(' (type ':' NAME)* ')' '->' type # FunctionDecl
+         | 'fn' NAME '(' (type ':' NAME)* ')' '->' type block # FunctionDecl
          | NAME '(' expression* ')' #FunctionApp
          ;
 
