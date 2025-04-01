@@ -71,7 +71,7 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<StringMatrixFu
         let frame_index : number = env.length
         while (this.value_index(env[--frame_index], x) === -1) {
             if(frame_index == 0) {
-                throw new Error(`Unbounded name: ${x}`)
+                throw new Error(`Unbounded name: ${x}, current compile time environment: ${env}`)
             }
         }
         return [frame_index,
