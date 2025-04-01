@@ -193,7 +193,15 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                 declaredParameterTypes[i] = this.visit(types[i])(ce)
             }
             declaredReturnType = this.visit(types[types.length - 1])(ce)
-            let actualReturnType = this.returnTypeFinder.visit(ctx.block())(ce)
+            let allNames = ctx.NAME()
+            let parameterName: TypeClosure[] = []
+            for (let i = 1; i < allNames.length; i++) {
+                parameterName[i - 1] = {name:allNames[i].getText(), type: declaredParameterTypes[i - 1].type, dropped: false,
+                mutable:false, parameterType:declaredParameterTypes[i - 1].parameterType,
+                    returnType: declaredParameterTypes[i - 1].returnType}
+            }
+            let e = this.compile_time_environment_extend(parameterName, ce)
+            let actualReturnType = this.returnTypeFinder.visit(ctx.block())(e)
 
             if (this.deepEqual(actualReturnType, declaredReturnType)) {
                 return { type : "function", parameterTypes : declaredParameterTypes, returnTypes : declaredReturnType }
