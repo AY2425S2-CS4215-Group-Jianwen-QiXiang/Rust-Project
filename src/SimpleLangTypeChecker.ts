@@ -209,7 +209,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             let functionName= ctx.NAME().getText()
             let functionType = this.compile_time_environment_type_look_up(ce, functionName)
             if (functionType.type !== "function") {
-                throw new Error(`Call to non-function object : ${functionName}`)
+                throw new Error(`Call to non-function object : ${functionName} type : ${JSON.stringify(functionType)}`)
             } else {
                 let expectedParameterTypes = functionType.parameterType
                 let actualParameters = ctx.expression()
