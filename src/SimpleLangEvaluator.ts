@@ -192,7 +192,13 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<StringMatrixFu
             this.instruction[this.wc++] = {tag: 'LDF', arity: (ctx.NAME()).length - 1, addr: this.wc + 1};
             const goto_instruction = {tag: 'GOTO', address: 0}
             this.instruction[this.wc++] = goto_instruction
-            this.visit(ctx.block())(ce)
+            let allNames = ctx.NAME()
+            let parameterName: string[] = []
+            for (let i = 1; i < allNames.length; i++) {
+                parameterName[i - 1] = allNames[i].getText()
+            }
+            let e = this.compile_time_environment_extend(parameterName, ce)
+            this.visit(ctx.block())(e)
             this.instruction[this.wc++] = {tag: 'LDC', val: undefined}
             this.instruction[this.wc++] = {tag: 'RESET'}
             goto_instruction.address = this.wc
