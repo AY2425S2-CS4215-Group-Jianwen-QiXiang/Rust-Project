@@ -17,17 +17,21 @@ statement: expression ';'                           # ExprStmt
 
 block: '{' sequence '}';
 
-expression: '-' expression                          # Negate
-          | '!' expression                          # Not
-          | expression ('*' | '/' ) expression            # MulDiv
-          | expression ('+' | '-') expression             # AddSub
-          | expression ('&&' | '||') expression           # Logical
-          | '(' expression ')'                      # Parens
-          | NAME '(' expression* ')'           #FunctionApp
-          | lambdaExpr                         # Lambda
-          | literal                            # literals
-          | NAME                               # Variable
+expression: primary                                     # PrimaryExpr
+          | '-' expression                             # Negate
+          | '!' expression                             # Not
+          | expression ('*' | '/' ) expression        # MulDiv
+          | expression ('+' | '-') expression         # AddSub
+          | expression ('&&' | '||') expression       # Logical
           ;
+
+primary: NAME '(' expression* ')'                     # FunctionApp
+       | '(' expression ')'                           # Parens
+       | lambdaExpr                                   # Lambda
+       | literal                                      # literals
+       | NAME                                         # Variable
+       ;
+
 
 literal: INTEGER # integer
        | BOOLEAN # boolean
