@@ -183,17 +183,58 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
 
     visitFunctionDecl(ctx: FunctionDeclContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type : "undefined"}
+            let declaredParameterTypes: TypeObject[] = []
+            let declaredReturnType: TypeObject
+            let types = ctx.type_()
+            for (let i = 0; i < types.length - 1; i++) {
+                declaredParameterTypes[i] = this.visit(types[i])(ce)
+            }
+            declaredReturnType = this.visit(types[types.length - 1])(ce)
+            let actualReturnType = this.visit(ctx.block())(ce)
+
+            if (this.deepEqual(actualReturnType, declaredReturnType)) {
+                return { type : "function", parameterTypes : declaredParameterTypes, returnTypes : declaredReturnType }
+            } else {
+                throw new Error(`Mismatch in return type, expected : ${JSON.stringify(declaredReturnType)},
+                 but got ${JSON.stringify(actualReturnType)}`)
+            }
         }
     }
 
+
     visitFunctionApp(ctx: FunctionAppContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
-            let functionName = ctx.NAME()[0]
-            let functionType = this.visit(functionName)(ce)
-            return {type : "undefined"}
+            let functionName= ctx.NAME().getText()
+            let functionType = this.compile_time_environment_type_look_up(ce, functionName)
+            if (functionType.dropped) {
+                throw new Error(`reference to name ${functionName} has been dropped`)
+            }
+            if (functionType.type !== "function") {
+                throw new Error(`Call to non-function object : ${functionName} type : ${JSON.stringify(functionType)}`)
+            } else {
+                let expectedParameterTypes = functionType.parameterType
+                let actualParameters = ctx.expression()
+                if (actualParameters.length !== expectedParameterTypes.length) {
+                    throw new Error(`Incorrect number of argument. Expect ${expectedParameterTypes.length},
+                     but got ${actualParameters.length}`)
+                } else {
+                    for (let i = 0; i < expectedParameterTypes.length; i++) {
+                        let expectedParameterType: TypeObject = expectedParameterTypes[i]
+                        let actualParameterType = this.visit(actualParameters[i])(ce)
+                        if (actualParameters[i] instanceof VariableContext) {}
+                        if (this.deepEqual(expectedParameterType, actualParameterType)) {
+
+                        } else {
+                            throw new Error(`Type mismatch in argument ${i} of call to ${functionName}
+                             Expected ${JSON.stringify(actualParameterType)} type ${JSON.stringify(expectedParameterType)}`)
+                        }
+                    }
+                    return functionType.returnType
+                }
+            }
         }
     }
+
 
     visitBlock(ctx: BlockContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
@@ -341,5 +382,20 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
             returnType =  this.visit(types[types.length - 1])(ce)
             return {type: "function", parameterTypes, returnType}
         }
+    }
+
+    deepEqual(obj1: any, obj2: any): boolean {
+        if (obj1 === obj2) return true; // Same reference
+
+        if (typeof obj1 !== "object" || typeof obj2 !== "object" || obj1 == null || obj2 == null) {
+            return false; // One of them is not an object
+        }
+
+        const keys1 = Object.keys(obj1);
+        const keys2 = Object.keys(obj2);
+
+        if (keys1.length !== keys2.length) return false; // Different number of keys
+
+        return keys1.every(key => this.deepEqual(obj1[key], obj2[key])); // Recursively check values
     }
 }
