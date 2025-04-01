@@ -142,10 +142,10 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<StringMatrixFu
 
     visitConstDecl(ctx: ConstDeclContext) : StringMatrixFunction {
         return ce => {
-            let type = ctx.type().getText()
             let name = ctx.NAME().getText()
             this.visit(ctx.expression())(ce)
-            this.instruction[this.wc++] = {tag: "Assignment", name: name, type: type};
+            this.instruction[this.wc++] = {tag: "Assignment", name: name,
+                pos: this.compile_time_environment_position(ce, name)};
         }
     }
 
@@ -182,6 +182,34 @@ class SimpleLangEvaluatorVisitor extends AbstractParseTreeVisitor<StringMatrixFu
 
     visitBlockStmt(ctx: BlockStmtContext) : StringMatrixFunction {
         return this.visit(ctx.block())
+    }
+
+    visitFunctionDecl(ctx: FunctionDeclContext) : StringMatrixFunction {
+        return ce => {
+            let functionName = ctx.NAME()[0].getText()
+            this.instruction[this.wc++] = {tag: 'LDF', arity: (ctx.NAME()).length - 1, addr: this.wc + 1};
+            const goto_instruction = {tag: 'GOTO', address: 0}
+            this.instruction[this.wc++] = goto_instruction
+            this.visit(ctx.block())(ce)
+            this.instruction[this.wc++] = {tag: 'LDC', val: undefined}
+            this.instruction[this.wc++] = {tag: 'RESET'}
+            goto_instruction.address = this.wc
+            this.instruction[this.wc++] = {tag: "Assignment", name: functionName,
+                pos: this.compile_time_environment_position(ce, functionName)};
+        }
+    }
+
+    visitFunctionApp(ctx: FunctionAppContext) : StringMatrixFunction {
+        return ce => {
+            let functionName = ctx.NAME().getText()
+            this.instruction[this.wc++] = {tag: 'LD', name:functionName,
+                pos: this.compile_time_environment_position(ce, functionName)}
+            let parameters = ctx.expression()
+            for (let parameter of parameters) {
+                this.visit(parameter)(ce)
+            }
+            this.instruction[this.wc++] = {tag: 'CALL', arity: parameters.length}
+        }
     }
 
     visitBlock(ctx: BlockContext) : StringMatrixFunction {
