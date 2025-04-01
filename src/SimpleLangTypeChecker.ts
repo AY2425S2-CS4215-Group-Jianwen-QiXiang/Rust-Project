@@ -91,7 +91,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                 parameterTypes[i] = this.visit(types[i])(ce)
             }
             returnType = this.visit(types[types.length - 1])(ce)
-            return [{name : ctx.NAME()[0].getText(), type: "Function", dropped:false,
+            return [{name : ctx.NAME()[0].getText(), type: "function", dropped:false,
                 mutable: false, parameterType: parameterTypes, returnType: returnType}]
         } else {
             return []
