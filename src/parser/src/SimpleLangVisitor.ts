@@ -7,6 +7,8 @@ import { ProgContext } from "./SimpleLangParser.js";
 import { SequenceContext } from "./SimpleLangParser.js";
 import { ExprStmtContext } from "./SimpleLangParser.js";
 import { ConstDeclContext } from "./SimpleLangParser.js";
+import { MutConstDeclContext } from "./SimpleLangParser.js";
+import { AssignmentContext } from "./SimpleLangParser.js";
 import { IfStmtContext } from "./SimpleLangParser.js";
 import { WhileStmtContext } from "./SimpleLangParser.js";
 import { BlockStmtContext } from "./SimpleLangParser.js";
@@ -14,11 +16,14 @@ import { ReturnStmtContext } from "./SimpleLangParser.js";
 import { FunctionDeclContext } from "./SimpleLangParser.js";
 import { BlockContext } from "./SimpleLangParser.js";
 import { NotContext } from "./SimpleLangParser.js";
+import { MutBorrowContext } from "./SimpleLangParser.js";
+import { BorrowContext } from "./SimpleLangParser.js";
 import { MulDivContext } from "./SimpleLangParser.js";
 import { AddSubContext } from "./SimpleLangParser.js";
 import { LogicalContext } from "./SimpleLangParser.js";
 import { PrimaryExprContext } from "./SimpleLangParser.js";
 import { NegateContext } from "./SimpleLangParser.js";
+import { DereferenceContext } from "./SimpleLangParser.js";
 import { FunctionAppContext } from "./SimpleLangParser.js";
 import { ParensContext } from "./SimpleLangParser.js";
 import { LambdaContext } from "./SimpleLangParser.js";
@@ -29,6 +34,8 @@ import { BooleanContext } from "./SimpleLangParser.js";
 import { LambdaExprContext } from "./SimpleLangParser.js";
 import { IntTypeContext } from "./SimpleLangParser.js";
 import { BoolTypeContext } from "./SimpleLangParser.js";
+import { IntPointerTypeContext } from "./SimpleLangParser.js";
+import { BoolPointerTypeContext } from "./SimpleLangParser.js";
 import { FunctionTypeContext } from "./SimpleLangParser.js";
 
 
@@ -66,6 +73,20 @@ export class SimpleLangVisitor<Result> extends AbstractParseTreeVisitor<Result> 
      * @return the visitor result
      */
     visitConstDecl?: (ctx: ConstDeclContext) => Result;
+    /**
+     * Visit a parse tree produced by the `MutConstDecl`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitMutConstDecl?: (ctx: MutConstDeclContext) => Result;
+    /**
+     * Visit a parse tree produced by the `Assignment`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitAssignment?: (ctx: AssignmentContext) => Result;
     /**
      * Visit a parse tree produced by the `IfStmt`
      * labeled alternative in `SimpleLangParser.statement`.
@@ -115,6 +136,20 @@ export class SimpleLangVisitor<Result> extends AbstractParseTreeVisitor<Result> 
      */
     visitNot?: (ctx: NotContext) => Result;
     /**
+     * Visit a parse tree produced by the `MutBorrow`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitMutBorrow?: (ctx: MutBorrowContext) => Result;
+    /**
+     * Visit a parse tree produced by the `Borrow`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitBorrow?: (ctx: BorrowContext) => Result;
+    /**
      * Visit a parse tree produced by the `MulDiv`
      * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
@@ -149,6 +184,13 @@ export class SimpleLangVisitor<Result> extends AbstractParseTreeVisitor<Result> 
      * @return the visitor result
      */
     visitNegate?: (ctx: NegateContext) => Result;
+    /**
+     * Visit a parse tree produced by the `Dereference`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitDereference?: (ctx: DereferenceContext) => Result;
     /**
      * Visit a parse tree produced by the `FunctionApp`
      * labeled alternative in `SimpleLangParser.primary`.
@@ -218,6 +260,20 @@ export class SimpleLangVisitor<Result> extends AbstractParseTreeVisitor<Result> 
      * @return the visitor result
      */
     visitBoolType?: (ctx: BoolTypeContext) => Result;
+    /**
+     * Visit a parse tree produced by the `IntPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitIntPointerType?: (ctx: IntPointerTypeContext) => Result;
+    /**
+     * Visit a parse tree produced by the `BoolPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitBoolPointerType?: (ctx: BoolPointerTypeContext) => Result;
     /**
      * Visit a parse tree produced by the `FunctionType`
      * labeled alternative in `SimpleLangParser.type`.

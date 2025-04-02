@@ -4,6 +4,12 @@ import { CharStream, CommonTokenStream, AbstractParseTreeVisitor } from 'antlr4n
 import { SimpleLangLexer } from './parser/src/SimpleLangLexer';
 import { SimpleLangTypeChecker} from  './SimpleLangTypeChecker'
 import {
+    BorrowContext,
+    MutBorrowContext,
+    DereferenceContext,
+    ExpressionContext,
+    AssignmentContext,
+    MutConstDeclContext,
     FunctionAppContext,
     FunctionDeclContext,
     ReturnStmtContext,
@@ -44,9 +50,15 @@ type TypeClosure = {
     type: string;
     dropped : boolean;
     mutable : boolean;
+    borrowState: {
+        mutableBorrows: number;
+        immutableBorrows: number;
+    };
+    borrowFrom?: string;
     parameterType?: TypeObject[];
     returnType?: TypeObject;
 };
+
 
 type StringMatrixFunction = (arg: string[][]) => undefined;
 

@@ -7,6 +7,8 @@ import { ProgContext } from "./SimpleLangParser.js";
 import { SequenceContext } from "./SimpleLangParser.js";
 import { ExprStmtContext } from "./SimpleLangParser.js";
 import { ConstDeclContext } from "./SimpleLangParser.js";
+import { MutConstDeclContext } from "./SimpleLangParser.js";
+import { AssignmentContext } from "./SimpleLangParser.js";
 import { IfStmtContext } from "./SimpleLangParser.js";
 import { WhileStmtContext } from "./SimpleLangParser.js";
 import { BlockStmtContext } from "./SimpleLangParser.js";
@@ -14,11 +16,14 @@ import { ReturnStmtContext } from "./SimpleLangParser.js";
 import { FunctionDeclContext } from "./SimpleLangParser.js";
 import { BlockContext } from "./SimpleLangParser.js";
 import { NotContext } from "./SimpleLangParser.js";
+import { MutBorrowContext } from "./SimpleLangParser.js";
+import { BorrowContext } from "./SimpleLangParser.js";
 import { MulDivContext } from "./SimpleLangParser.js";
 import { AddSubContext } from "./SimpleLangParser.js";
 import { LogicalContext } from "./SimpleLangParser.js";
 import { PrimaryExprContext } from "./SimpleLangParser.js";
 import { NegateContext } from "./SimpleLangParser.js";
+import { DereferenceContext } from "./SimpleLangParser.js";
 import { FunctionAppContext } from "./SimpleLangParser.js";
 import { ParensContext } from "./SimpleLangParser.js";
 import { LambdaContext } from "./SimpleLangParser.js";
@@ -29,6 +34,8 @@ import { BooleanContext } from "./SimpleLangParser.js";
 import { LambdaExprContext } from "./SimpleLangParser.js";
 import { IntTypeContext } from "./SimpleLangParser.js";
 import { BoolTypeContext } from "./SimpleLangParser.js";
+import { IntPointerTypeContext } from "./SimpleLangParser.js";
+import { BoolPointerTypeContext } from "./SimpleLangParser.js";
 import { FunctionTypeContext } from "./SimpleLangParser.js";
 
 
@@ -81,6 +88,30 @@ export class SimpleLangListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitConstDecl?: (ctx: ConstDeclContext) => void;
+    /**
+     * Enter a parse tree produced by the `MutConstDecl`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     */
+    enterMutConstDecl?: (ctx: MutConstDeclContext) => void;
+    /**
+     * Exit a parse tree produced by the `MutConstDecl`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     */
+    exitMutConstDecl?: (ctx: MutConstDeclContext) => void;
+    /**
+     * Enter a parse tree produced by the `Assignment`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     */
+    enterAssignment?: (ctx: AssignmentContext) => void;
+    /**
+     * Exit a parse tree produced by the `Assignment`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     */
+    exitAssignment?: (ctx: AssignmentContext) => void;
     /**
      * Enter a parse tree produced by the `IfStmt`
      * labeled alternative in `SimpleLangParser.statement`.
@@ -164,6 +195,30 @@ export class SimpleLangListener implements ParseTreeListener {
      */
     exitNot?: (ctx: NotContext) => void;
     /**
+     * Enter a parse tree produced by the `MutBorrow`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    enterMutBorrow?: (ctx: MutBorrowContext) => void;
+    /**
+     * Exit a parse tree produced by the `MutBorrow`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    exitMutBorrow?: (ctx: MutBorrowContext) => void;
+    /**
+     * Enter a parse tree produced by the `Borrow`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    enterBorrow?: (ctx: BorrowContext) => void;
+    /**
+     * Exit a parse tree produced by the `Borrow`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    exitBorrow?: (ctx: BorrowContext) => void;
+    /**
      * Enter a parse tree produced by the `MulDiv`
      * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
@@ -223,6 +278,18 @@ export class SimpleLangListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitNegate?: (ctx: NegateContext) => void;
+    /**
+     * Enter a parse tree produced by the `Dereference`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    enterDereference?: (ctx: DereferenceContext) => void;
+    /**
+     * Exit a parse tree produced by the `Dereference`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    exitDereference?: (ctx: DereferenceContext) => void;
     /**
      * Enter a parse tree produced by the `FunctionApp`
      * labeled alternative in `SimpleLangParser.primary`.
@@ -341,6 +408,30 @@ export class SimpleLangListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitBoolType?: (ctx: BoolTypeContext) => void;
+    /**
+     * Enter a parse tree produced by the `IntPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    enterIntPointerType?: (ctx: IntPointerTypeContext) => void;
+    /**
+     * Exit a parse tree produced by the `IntPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    exitIntPointerType?: (ctx: IntPointerTypeContext) => void;
+    /**
+     * Enter a parse tree produced by the `BoolPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    enterBoolPointerType?: (ctx: BoolPointerTypeContext) => void;
+    /**
+     * Exit a parse tree produced by the `BoolPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    exitBoolPointerType?: (ctx: BoolPointerTypeContext) => void;
     /**
      * Enter a parse tree produced by the `FunctionType`
      * labeled alternative in `SimpleLangParser.type`.

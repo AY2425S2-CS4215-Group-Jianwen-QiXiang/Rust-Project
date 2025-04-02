@@ -5,6 +5,12 @@ import { SimpleLangLexer } from './parser/src/SimpleLangLexer';
 import { SimpleLangReturnTypeFinder} from  './SimpleLangReturnTypeFinder'
 
 import {
+    BorrowContext,
+    MutBorrowContext,
+    DereferenceContext,
+    ExpressionContext,
+    AssignmentContext,
+    MutConstDeclContext,
     FunctionAppContext,
     FunctionDeclContext,
     ReturnStmtContext,
@@ -45,6 +51,11 @@ type TypeClosure = {
     type: string;
     dropped : boolean;
     mutable : boolean;
+    borrowState: {
+        mutableBorrows: number;
+        immutableBorrows: number;
+    };
+    borrowFrom?: string;
     parameterType?: TypeObject[];
     returnType?: TypeObject;
 };
@@ -82,7 +93,11 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
 
     scan_statement(ctx : StatementContext, ce : TypeClosure[][]) : TypeClosure[] {
         if (ctx instanceof ConstDeclContext) {
-            return [{name : ctx.NAME().getText(), type: ctx.type().getText(), dropped: false, mutable: false}];
+            return [{name : ctx.NAME().getText(), type: ctx.type().getText(),
+                dropped: false, mutable: false, borrowState:{mutableBorrows:0, immutableBorrows:0}}];
+        } else if (ctx instanceof MutConstDeclContext) {
+            return [{name : ctx.NAME().getText(), type: ctx.type().getText(),
+                dropped: false, mutable: true, borrowState:{mutableBorrows:0, immutableBorrows:0}}];
         } else if (ctx instanceof FunctionDeclContext) {
             let parameterTypes: TypeObject[] = []
             let returnType: TypeObject
@@ -92,7 +107,8 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             }
             returnType = this.visit(types[types.length - 1])(ce)
             return [{name : ctx.NAME()[0].getText(), type: "function", dropped:false,
-                mutable: false, parameterType: parameterTypes, returnType: returnType}]
+                mutable: false, parameterType: parameterTypes, returnType: returnType,
+                borrowState:{mutableBorrows:0, immutableBorrows:0}}]
         } else {
             return []
         }
@@ -197,8 +213,8 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             let parameterName: TypeClosure[] = []
             for (let i = 1; i < allNames.length; i++) {
                 parameterName[i - 1] = {name:allNames[i].getText(), type: declaredParameterTypes[i - 1].type, dropped: false,
-                mutable:false, parameterType:declaredParameterTypes[i - 1].parameterType,
-                    returnType: declaredParameterTypes[i - 1].returnType}
+                    mutable:false, parameterType:declaredParameterTypes[i - 1].parameterType,
+                    returnType: declaredParameterTypes[i - 1].returnType, borrowState:{mutableBorrows:0, immutableBorrows:0}}
             }
             let e = this.compile_time_environment_extend(parameterName, ce)
             let actualReturnType = this.returnTypeFinder.visit(ctx.block())(e)
@@ -242,6 +258,135 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
         }
     }
 
+    visitBorrow(ctx: BorrowContext): CompileTimeTypeEnvironmentToType {
+        return ce => {
+            const name = ctx.NAME().getText();
+            const variable = this.compile_time_environment_type_look_up(ce, name);
+
+            // Cannot create immutable borrow if mutable borrows exist
+            if (variable.borrowState.mutableBorrows > 0) {
+                throw new Error(`Cannot borrow '${name}' as immutable because it is also borrowed as mutable`);
+            }
+
+            // Track the immutable borrow
+            variable.borrowState.immutableBorrows++;
+
+            const innerType = variable.type
+            if (innerType !== "int" && innerType !== "bool") {
+                throw new Error(`Can only create pointer for int and bool, but got ${JSON.stringify(innerType)}`)
+            }
+            return {type: '&'+innerType};
+        };
+    }
+
+    visitMutBorrow(ctx: MutBorrowContext): CompileTimeTypeEnvironmentToType {
+        return ce => {
+            const name = ctx.NAME().getText();
+            const variable = this.compile_time_environment_type_look_up(ce, name);
+            if (!variable.mutable) {
+                throw new Error(`Cannot mutably borrow immutable variable '${name}'`);
+            }
+
+            // Cannot create mutable borrow if any borrows exist
+            if (variable.borrowState.mutableBorrows > 0) {
+                throw new Error(`Cannot borrow '${name}' as mutable more than once at a time`);
+            }
+
+            if (variable.borrowState.immutableBorrows > 0) {
+                throw new Error(`Cannot borrow '${name}' as mutable because it is also borrowed as immutable`);
+            }
+
+            variable.borrowState.mutableBorrows++;
+
+            const innerType = variable.type
+            if (innerType !== "int" && innerType !== "bool") {
+                throw new Error(`Can only create pointer for int and bool, but got ${JSON.stringify(innerType)}`)
+            }
+            // Check if the inner expression can be mutably borrowed
+            if (innerType.startsWith('&')) {
+                throw new Error('Cannot borrow a reference as mutable');
+            }
+            return {type: '&'+innerType};
+        };
+    }
+
+    // Helper to check if expression is on the left side of an assignment
+    isAssignmentTarget(ctx: ExpressionContext): boolean {
+        const parent = ctx.parent;
+        // Check if this expression is the left-hand side of an assignment
+        return parent instanceof AssignmentContext && parent.expression() === ctx;
+    }
+
+    visitDereference(ctx: DereferenceContext): CompileTimeTypeEnvironmentToType {
+        return ce => {
+            const name = ctx.NAME().getText();
+            const variable = this.compile_time_environment_type_look_up(ce, name);
+            const innerType = variable.type
+
+            // Check if the expression is a reference type
+            if (!innerType.startsWith('&')) {
+                throw new Error(`Cannot dereference non-reference type '${innerType}'`);
+            }
+
+            // Extract the base type (remove the reference)
+            const baseType = innerType.replace(/^&(mut )?/, '');
+
+            // Check if this is an assignment target
+            const isAssignmentTarget = this.isAssignmentTarget(ctx);
+
+            // If it's an assignment target, ensure the reference is mutable
+            if (isAssignmentTarget && !innerType.includes('mut')) {
+                throw new Error(`Cannot modify through an immutable reference`);
+            }
+
+            return {type: baseType};
+        };
+    }
+
+    visitAssignment(ctx: AssignmentContext): CompileTimeTypeEnvironmentToType {
+        return ce => {
+            const name = ctx.NAME().getText();
+            const variable = this.compile_time_environment_type_look_up(ce, name);
+
+            if (!variable.mutable) {
+                throw new Error(`Cannot assign to immutable variable '${name}'`);
+            }
+
+            const rightType = this.visit(ctx.expression())(ce);
+            if (variable.type !== rightType.type) {
+                throw new Error(`Type mismatch: expected '${variable.type}', found '${rightType.type}'`);
+            }
+
+            // If the right side is a variable, mark it as moved
+            if (ctx.expression() instanceof VariableContext) {
+                const rightName = (ctx.expression() as VariableContext).NAME().getText();
+                const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
+                // Only move if it's not a reference
+                if (rightVar.type !== 'int' && rightVar.type !== 'bool') {
+                    rightVar.dropped = true;
+                }
+            }
+
+            return {type: variable.type, parameterType: variable.parameterType, returnType: variable.returnType};
+        }
+    }
+
+    visitMutConstDecl(ctx: MutConstDeclContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            let declared_type = ctx.type().getText()
+            let name = ctx.NAME().getText()
+            let actual_type = this.visit(ctx.expression())(ce)
+            if (declared_type == actual_type.type) {
+                return actual_type
+            } else {
+                throw new Error(`Expected type ${declared_type}, actual type ${actual_type.type}`)
+            }
+        }
+    }
+
+
+    // Need modification decrement count for dropped borrowing
+    // Can do deep copy to ce
     visitBlock(ctx: BlockContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
             let vs = this.scan_sequence(ctx.sequence(), ce)
@@ -265,9 +410,15 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
         return  ce => {
             let name = ctx.NAME().getText()
             let lookupResult = this.compile_time_environment_type_look_up(ce, name)
+
             if (lookupResult.dropped) {
                 throw new Error(`reference to name ${name} has been dropped`)
             }
+
+            if (lookupResult.borrowState.mutableBorrows > 0) {
+                throw new Error(`Cannot use '${name}' because it is mutably borrowed`);
+            }
+
             let result: TypeObject = {type : lookupResult.type}
             if ("parameterType" in lookupResult && "returnType" in lookupResult) {
                 result.parameterType = lookupResult.parameterType
