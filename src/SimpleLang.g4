@@ -18,7 +18,11 @@ statement: expression ';'                           # ExprStmt
 
 block: '{' sequence '}';
 
-expression: primary                                     # PrimaryExpr
+expression: NAME                                         # Variable
+          | literal                                      # literals
+          | '(' expression ')'                           # Parens
+          | NAME '(' expression* ')'                     # FunctionApp
+          | lambdaExpr                                   # Lambda
           | '&' NAME                      # Borrow
           | '&mut' NAME                   # MutBorrow
           | '*' NAME                      # Dereference
@@ -29,19 +33,13 @@ expression: primary                                     # PrimaryExpr
           | expression ('&&' | '||') expression       # Logical
           ;
 
-primary: NAME '(' expression* ')'                     # FunctionApp
-       | '(' expression ')'                           # Parens
-       | lambdaExpr                                   # Lambda
-       | literal                                      # literals
-       | NAME                                         # Variable
-       ;
-
 
 literal: INTEGER # integer
        | BOOLEAN # boolean
        ;
 
 lambdaExpr: (NAME*) '=>' block;
+
 type: 'int' #IntType
     | 'bool' #BoolType
     | '&int' #IntPointerType

@@ -115,10 +115,10 @@ export class RustedCompiler extends AbstractParseTreeVisitor<StringMatrixFunctio
         return ce => {
             let vs = this.scan_sequence(ctx.sequence())
             let e = this.compile_time_environment_extend(vs, ce)
-            this.instruction[this.wc++] = {tag: "Enter Scope"}
+            this.instruction[this.wc++] = {tag: "ENTER_SCOPE", size : vs.length}
             this.visit(ctx.sequence())(e);
-            this.instruction[this.wc++] = {tag: "Exit Scope"}
-            this.instruction[this.wc++] = {tag: "Done"}}
+            this.instruction[this.wc++] = {tag: "EXIT_SCOPE"}
+            this.instruction[this.wc++] = {tag: "DONE"}}
     }
 
     visitSequence(ctx: SequenceContext) : StringMatrixFunction {
@@ -133,7 +133,7 @@ export class RustedCompiler extends AbstractParseTreeVisitor<StringMatrixFunctio
                         this.visit(statement)(ce)
                         is_first = false;
                     } else {
-                        this.instruction[this.wc++] = ({tag: "Pop"})
+                        this.instruction[this.wc++] = ({tag: "POP"})
                         this.visit(statement)(ce)
                     }
                 }
@@ -157,7 +157,7 @@ export class RustedCompiler extends AbstractParseTreeVisitor<StringMatrixFunctio
         return ce => {
             let name = ctx.NAME().getText()
             this.visit(ctx.expression())(ce)
-            this.instruction[this.wc++] = {tag: "Assignment", name: name,
+            this.instruction[this.wc++] = {tag: "ASSIGN", name: name,
                 pos: this.compile_time_environment_position(ce, name)};
         }
     }
@@ -168,7 +168,7 @@ export class RustedCompiler extends AbstractParseTreeVisitor<StringMatrixFunctio
             let jof_instruction = {tag:"JOF", address: 0}
             this.instruction[this.wc++] = jof_instruction;
             this.visit(ctx.block(0))(ce)
-            let goto_instruction = {tag:"Goto", address: 0}
+            let goto_instruction = {tag:"GOTO", address: 0}
             this.instruction[this.wc++] = goto_instruction
             jof_instruction.address = this.wc
             this.visit(ctx.block(1))(ce)
@@ -182,13 +182,13 @@ export class RustedCompiler extends AbstractParseTreeVisitor<StringMatrixFunctio
             let loopStart = this.wc
             this.visit(ctx.expression())(ce)
             let jof_instruction = {tag:"JOF", address: 0}
-            let goto_instruction = {tag:"Goto", address: loopStart}
+            let goto_instruction = {tag:"GOTO", address: loopStart}
             this.instruction[this.wc++] = jof_instruction
             this.visit(ctx.block())(ce)
-            this.instruction[this.wc++] = {tag:"Pop"}
+            this.instruction[this.wc++] = {tag:"POP"}
             this.instruction[this.wc++] = goto_instruction
             jof_instruction.address = this.wc
-            this.instruction[this.wc++] = {tag:"literal", value: undefined}
+            this.instruction[this.wc++] = {tag:"LDC", value: "undefined"}
         }
 
     }
@@ -213,7 +213,7 @@ export class RustedCompiler extends AbstractParseTreeVisitor<StringMatrixFunctio
             this.instruction[this.wc++] = {tag: 'LDC', val: undefined}
             this.instruction[this.wc++] = {tag: 'RESET'}
             goto_instruction.address = this.wc
-            this.instruction[this.wc++] = {tag: "Assignment", name: functionName,
+            this.instruction[this.wc++] = {tag: "ASSIGN", name: functionName,
                 pos: this.compile_time_environment_position(ce, functionName)};
         }
     }
@@ -235,9 +235,9 @@ export class RustedCompiler extends AbstractParseTreeVisitor<StringMatrixFunctio
         return ce => {
             let vs = this.scan_sequence(ctx.sequence())
             let e = this.compile_time_environment_extend(vs, ce)
-            this.instruction[this.wc++] = {tag: "Enter Scope"}
+            this.instruction[this.wc++] = {tag: "ENTER_SCOPE", size : vs.length}
             this.visit(ctx.sequence())(e);
-            this.instruction[this.wc++] = {tag: "Exit Scope"}
+            this.instruction[this.wc++] = {tag: "EXIT_SCOPE"}
         }
     }
 
@@ -368,8 +368,6 @@ export class RustedCompiler extends AbstractParseTreeVisitor<StringMatrixFunctio
         }
         return result
     }
-
-
 
 }
 

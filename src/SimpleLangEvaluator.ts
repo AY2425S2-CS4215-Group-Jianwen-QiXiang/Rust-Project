@@ -38,6 +38,7 @@ import {
 } from './parser/src/SimpleLangParser';
 import { SimpleLangVisitor } from './parser/src/SimpleLangVisitor';
 import {type} from "node:os";
+import {RustedMachine} from "./RustedMachine";
 
 type TypeObject = {
     type: string;
@@ -129,11 +130,13 @@ export class Evaluator {
     private executionCount: number;
     private visitor: RustedCompiler;
     private typeChecker: SimpleLangTypeChecker;
+    private machine : RustedMachine;
 
     constructor() {
         this.executionCount = 0;
         this.visitor = new RustedCompiler();
         this.typeChecker = new SimpleLangTypeChecker()
+
     }
 
     public typeCheck(str: string): string {
@@ -164,8 +167,11 @@ export class Evaluator {
         console.log(this.typeChecker.visit(tree)(global_type_ce))
         this.visitor.visit(tree)(global_ce)
 
+        this.machine = new RustedMachine(this.visitor.instruction)
+
+
         // Send the result to the REPL
-        return this.visitor.instructions_for_display()
+        return this.machine.run().toString()
     }
 
 }

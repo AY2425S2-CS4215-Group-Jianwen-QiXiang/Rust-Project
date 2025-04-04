@@ -31,11 +31,11 @@ export class Heap {
     Environment_tag    = 10
     Pointer_tag        = 11
 
-    False = this.heap_allocate(this.False_tag, 1)
-    True = this.heap_allocate(this.True_tag, 1)
-    Null = this.heap_allocate(this.Null_tag, 1)
-    Unassigned = this.heap_allocate(this.Unassigned_tag, 1)
-    Undefined = this.heap_allocate(this.Undefined_tag, 1)
+    False : number
+    True : number
+    Null : number
+    Unassigned: number
+    Undefined : number
 
     // Heap Constructor
     constructor(size: number) {
@@ -45,6 +45,13 @@ export class Heap {
         this.data = new ArrayBuffer(size)
         this.view = new DataView(this.data)
         this.free = 0
+
+
+        this.False = this.heap_allocate(this.False_tag, 1)
+        this.True = this.heap_allocate(this.True_tag, 1)
+        this.Null = this.heap_allocate(this.Null_tag, 1)
+        this.Unassigned = this.heap_allocate(this.Unassigned_tag, 1)
+        this.Undefined = this.heap_allocate(this.Undefined_tag, 1)
     }
 
     // Basic Heap operations
@@ -179,8 +186,6 @@ export class Heap {
     heap_allocate_Environment = number_of_frames =>
         this.heap_allocate(this.Environment_tag, number_of_frames + 1)
 
-    heap_empty_Environment = this.heap_allocate_Environment(0)
-
     heap_get_Environment_value =
         (env_address, position) => {
             const [frame_index, value_index] = position
@@ -246,7 +251,7 @@ export class Heap {
 
     address_to_JS_value = x =>
         this.is_Boolean(x)
-            ? (this.is_True(x))
+            ? (this.is_True(x) ? true : false)
             : this.is_Number(x)
                 ? this.heap_get(x + 1)
                 : this.is_Undefined(x)
@@ -261,17 +266,19 @@ export class Heap {
                                     ? this.heap_get(x + 1)
                                     : "unknown word tag: " + this.heap_get_tag(x)
 
-    JS_value_to_address = x =>
-        (typeof x === "boolean")
+
+    JS_value_to_address = x => {
+        return (typeof x === "boolean")
             ? (x ? this.True : this.False)
             : (typeof x === "number")
                 ? this.heap_allocate_Number(x)
-                : (x instanceof undefined)
+                : (x === undefined)
                     ? this.Undefined
-                    : (x instanceof null)
+                    : (x === null)
                         ? this.Null
                         : (is_Pointer_Type(x))
                             ? this.heap_allocate_Pointer(x.address)
-                            : "unknown word tag: " + this.heap_get_tag(x)
+                            : "unknown type: " + (typeof x)
+    }
 
 }
