@@ -15,8 +15,8 @@ import { BlockStmtContext } from "./SimpleLangParser.js";
 import { ReturnStmtContext } from "./SimpleLangParser.js";
 import { FunctionDeclContext } from "./SimpleLangParser.js";
 import { BlockContext } from "./SimpleLangParser.js";
-import { NotContext } from "./SimpleLangParser.js";
 import { MutBorrowContext } from "./SimpleLangParser.js";
+import { NotContext } from "./SimpleLangParser.js";
 import { BorrowContext } from "./SimpleLangParser.js";
 import { MulDivContext } from "./SimpleLangParser.js";
 import { AddSubContext } from "./SimpleLangParser.js";
@@ -129,19 +129,19 @@ export class SimpleLangVisitor<Result> extends AbstractParseTreeVisitor<Result> 
      */
     visitBlock?: (ctx: BlockContext) => Result;
     /**
-     * Visit a parse tree produced by the `Not`
-     * labeled alternative in `SimpleLangParser.expression`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitNot?: (ctx: NotContext) => Result;
-    /**
      * Visit a parse tree produced by the `MutBorrow`
      * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      * @return the visitor result
      */
     visitMutBorrow?: (ctx: MutBorrowContext) => Result;
+    /**
+     * Visit a parse tree produced by the `Not`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitNot?: (ctx: NotContext) => Result;
     /**
      * Visit a parse tree produced by the `Borrow`
      * labeled alternative in `SimpleLangParser.expression`.

@@ -15,8 +15,8 @@ import { BlockStmtContext } from "./SimpleLangParser.js";
 import { ReturnStmtContext } from "./SimpleLangParser.js";
 import { FunctionDeclContext } from "./SimpleLangParser.js";
 import { BlockContext } from "./SimpleLangParser.js";
-import { NotContext } from "./SimpleLangParser.js";
 import { MutBorrowContext } from "./SimpleLangParser.js";
+import { NotContext } from "./SimpleLangParser.js";
 import { BorrowContext } from "./SimpleLangParser.js";
 import { MulDivContext } from "./SimpleLangParser.js";
 import { AddSubContext } from "./SimpleLangParser.js";
@@ -183,18 +183,6 @@ export class SimpleLangListener implements ParseTreeListener {
      */
     exitBlock?: (ctx: BlockContext) => void;
     /**
-     * Enter a parse tree produced by the `Not`
-     * labeled alternative in `SimpleLangParser.expression`.
-     * @param ctx the parse tree
-     */
-    enterNot?: (ctx: NotContext) => void;
-    /**
-     * Exit a parse tree produced by the `Not`
-     * labeled alternative in `SimpleLangParser.expression`.
-     * @param ctx the parse tree
-     */
-    exitNot?: (ctx: NotContext) => void;
-    /**
      * Enter a parse tree produced by the `MutBorrow`
      * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
@@ -206,6 +194,18 @@ export class SimpleLangListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitMutBorrow?: (ctx: MutBorrowContext) => void;
+    /**
+     * Enter a parse tree produced by the `Not`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    enterNot?: (ctx: NotContext) => void;
+    /**
+     * Exit a parse tree produced by the `Not`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    exitNot?: (ctx: NotContext) => void;
     /**
      * Enter a parse tree produced by the `Borrow`
      * labeled alternative in `SimpleLangParser.expression`.

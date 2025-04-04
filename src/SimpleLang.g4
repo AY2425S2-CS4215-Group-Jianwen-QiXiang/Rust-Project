@@ -19,14 +19,14 @@ statement: expression ';'                           # ExprStmt
 block: '{' sequence '}';
 
 expression: primary                                     # PrimaryExpr
+          | '&' NAME                      # Borrow
+          | '&mut' NAME                   # MutBorrow
+          | '*' NAME                      # Dereference
           | '-' expression                             # Negate
           | '!' expression                             # Not
           | expression ('*' | '/' ) expression        # MulDiv
           | expression ('+' | '-') expression         # AddSub
           | expression ('&&' | '||') expression       # Logical
-          | '&' NAME                      # Borrow
-          | '&mut' NAME                   # MutBorrow
-          | '*' NAME                      # Dereference
           ;
 
 primary: NAME '(' expression* ')'                     # FunctionApp

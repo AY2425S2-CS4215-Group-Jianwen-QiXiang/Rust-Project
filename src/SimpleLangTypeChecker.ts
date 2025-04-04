@@ -5,6 +5,8 @@ import { SimpleLangLexer } from './parser/src/SimpleLangLexer';
 import { SimpleLangReturnTypeFinder} from  './SimpleLangReturnTypeFinder'
 
 import {
+    IntPointerTypeContext,
+    BoolPointerTypeContext,
     BorrowContext,
     MutBorrowContext,
     DereferenceContext,
@@ -160,6 +162,18 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             let declared_type = ctx.type().getText()
             let name = ctx.NAME().getText()
             let actual_type = this.visit(ctx.expression())(ce)
+            console.log(`TypeChecking declaration of ${name}`)
+            console.log(ctx.expression() instanceof VariableContext)
+            if (ctx.expression() instanceof VariableContext) {
+                console.log(`Checking if need to drop`);
+                const rightName = (ctx.expression() as VariableContext).NAME().getText();
+                const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
+                // Only move if it's not a reference
+                if (rightVar.type !== 'int' && rightVar.type !== 'bool') {
+                    console.log(`Dropping variable '${rightName}'`);
+                    rightVar.dropped = true;
+                }
+            }
             if (declared_type == actual_type.type) {
                 return actual_type
             } else {
@@ -376,6 +390,14 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             let declared_type = ctx.type().getText()
             let name = ctx.NAME().getText()
             let actual_type = this.visit(ctx.expression())(ce)
+            if (ctx.expression() instanceof VariableContext) {
+                const rightName = (ctx.expression() as VariableContext).NAME().getText();
+                const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
+                // Only move if it's not a reference
+                if (rightVar.type !== 'int' && rightVar.type !== 'bool') {
+                    rightVar.dropped = true;
+                }
+            }
             if (declared_type == actual_type.type) {
                 return actual_type
             } else {
@@ -519,6 +541,18 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
     visitBoolType(ctx: BoolTypeContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
             return {type: "bool"}
+        }
+    }
+
+    visitBoolPointerType(ctx: BoolPointerTypeContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            return {type: "&bool"}
+        }
+    }
+
+    visitIntPointerType(ctx: IntPointerTypeContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            return {type: "&int"}
         }
     }
 

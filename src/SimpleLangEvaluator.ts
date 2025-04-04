@@ -7,7 +7,6 @@ import {
     BorrowContext,
     MutBorrowContext,
     DereferenceContext,
-    ExpressionContext,
     AssignmentContext,
     MutConstDeclContext,
     FunctionAppContext,
@@ -414,4 +413,68 @@ export class SimpleLangEvaluator extends BasicEvaluator {
             }
         }
     }
+}
+
+
+export class Parser {
+    private lexer: SimpleLangLexer;
+    private parser: SimpleLangParser;
+    private inputStream: CharStream;
+    private tokenStream: CommonTokenStream;
+
+    constructor(str : string) {
+        this.inputStream = CharStream.fromString(str);
+        this.lexer = new SimpleLangLexer(this.inputStream);
+        this.tokenStream = new CommonTokenStream(this.lexer);
+        this.parser = new SimpleLangParser(this.tokenStream);
+    }
+
+    public parse(): ProgContext {
+        return this.parser.prog();
+    }
+}
+
+export class Evaluator {
+    private executionCount: number;
+    private visitor: SimpleLangEvaluatorVisitor;
+    private typeChecker: SimpleLangTypeChecker;
+
+    constructor() {
+        this.executionCount = 0;
+        this.visitor = new SimpleLangEvaluatorVisitor();
+        this.typeChecker = new SimpleLangTypeChecker()
+    }
+
+    public typeCheck(str: string): string {
+        this.executionCount++;
+
+
+        // Parse the input
+        const tree = (new Parser(str)).parse();
+
+        console.log(tree.toStringTree())
+
+        let global_ce: string[][] = []
+        let global_type_ce: TypeClosure[][] = []
+        return this.typeChecker.visit(tree)(global_type_ce).type
+    }
+
+    public evaluate(str: string): string {
+        this.executionCount++;
+
+
+        // Parse the input
+        const tree = (new Parser(str)).parse();
+
+        console.log(tree.toStringTree())
+
+        let global_ce: string[][] = []
+        let global_type_ce: TypeClosure[][] = []
+        console.log(this.typeChecker.visit(tree)(global_type_ce))
+        this.visitor.visit(tree)(global_ce)
+
+        // Send the result to the REPL
+        return this.visitor.instructions_for_display()
+    }
+
 }

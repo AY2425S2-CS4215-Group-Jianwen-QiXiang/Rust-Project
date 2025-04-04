@@ -58,8 +58,8 @@ export class SimpleLangParser extends antlr.Parser {
 
     public static readonly literalNames = [
         null, "';'", "'let'", "':'", "'='", "'mut'", "'if'", "'('", "')'", 
-        "'else'", "'while'", "'return'", "'fn'", "'->'", "'{'", "'}'", "'-'", 
-        "'!'", "'*'", "'/'", "'+'", "'&&'", "'||'", "'&'", "'&mut'", "'=>'", 
+        "'else'", "'while'", "'return'", "'fn'", "'->'", "'{'", "'}'", "'&'", 
+        "'&mut'", "'*'", "'-'", "'!'", "'/'", "'+'", "'&&'", "'||'", "'=>'", 
         "'int'", "'bool'", "'&int'", "'&bool'", "','"
     ];
 
@@ -133,7 +133,7 @@ export class SimpleLangParser extends antlr.Parser {
                 this.state = 24;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-            } while (((((_la - 2)) & ~0x1F) === 0 && ((1 << (_la - 2)) & 3772897073) !== 0));
+            } while (((((_la - 2)) & ~0x1F) === 0 && ((1 << (_la - 2)) & 3766998833) !== 0));
             }
         }
         catch (re) {
@@ -397,45 +397,23 @@ export class SimpleLangParser extends antlr.Parser {
                 break;
             case SimpleLangParser.T__15:
                 {
-                localContext = new NegateContext(localContext);
+                localContext = new BorrowContext(localContext);
                 this.context = localContext;
                 previousContext = localContext;
                 this.state = 95;
                 this.match(SimpleLangParser.T__15);
                 this.state = 96;
-                this.expression(8);
+                this.match(SimpleLangParser.NAME);
                 }
                 break;
             case SimpleLangParser.T__16:
                 {
-                localContext = new NotContext(localContext);
+                localContext = new MutBorrowContext(localContext);
                 this.context = localContext;
                 previousContext = localContext;
                 this.state = 97;
                 this.match(SimpleLangParser.T__16);
                 this.state = 98;
-                this.expression(7);
-                }
-                break;
-            case SimpleLangParser.T__22:
-                {
-                localContext = new BorrowContext(localContext);
-                this.context = localContext;
-                previousContext = localContext;
-                this.state = 99;
-                this.match(SimpleLangParser.T__22);
-                this.state = 100;
-                this.match(SimpleLangParser.NAME);
-                }
-                break;
-            case SimpleLangParser.T__23:
-                {
-                localContext = new MutBorrowContext(localContext);
-                this.context = localContext;
-                previousContext = localContext;
-                this.state = 101;
-                this.match(SimpleLangParser.T__23);
-                this.state = 102;
                 this.match(SimpleLangParser.NAME);
                 }
                 break;
@@ -444,10 +422,32 @@ export class SimpleLangParser extends antlr.Parser {
                 localContext = new DereferenceContext(localContext);
                 this.context = localContext;
                 previousContext = localContext;
-                this.state = 103;
+                this.state = 99;
                 this.match(SimpleLangParser.T__17);
-                this.state = 104;
+                this.state = 100;
                 this.match(SimpleLangParser.NAME);
+                }
+                break;
+            case SimpleLangParser.T__18:
+                {
+                localContext = new NegateContext(localContext);
+                this.context = localContext;
+                previousContext = localContext;
+                this.state = 101;
+                this.match(SimpleLangParser.T__18);
+                this.state = 102;
+                this.expression(5);
+                }
+                break;
+            case SimpleLangParser.T__19:
+                {
+                localContext = new NotContext(localContext);
+                this.context = localContext;
+                previousContext = localContext;
+                this.state = 103;
+                this.match(SimpleLangParser.T__19);
+                this.state = 104;
+                this.expression(4);
                 }
                 break;
             default:
@@ -472,12 +472,12 @@ export class SimpleLangParser extends antlr.Parser {
                         localContext = new MulDivContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, SimpleLangParser.RULE_expression);
                         this.state = 107;
-                        if (!(this.precpred(this.context, 6))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 6)");
+                        if (!(this.precpred(this.context, 3))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 3)");
                         }
                         this.state = 108;
                         _la = this.tokenStream.LA(1);
-                        if(!(_la === 18 || _la === 19)) {
+                        if(!(_la === 18 || _la === 21)) {
                         this.errorHandler.recoverInline(this);
                         }
                         else {
@@ -485,7 +485,7 @@ export class SimpleLangParser extends antlr.Parser {
                             this.consume();
                         }
                         this.state = 109;
-                        this.expression(7);
+                        this.expression(4);
                         }
                         break;
                     case 2:
@@ -493,12 +493,12 @@ export class SimpleLangParser extends antlr.Parser {
                         localContext = new AddSubContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, SimpleLangParser.RULE_expression);
                         this.state = 110;
-                        if (!(this.precpred(this.context, 5))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 5)");
+                        if (!(this.precpred(this.context, 2))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 2)");
                         }
                         this.state = 111;
                         _la = this.tokenStream.LA(1);
-                        if(!(_la === 16 || _la === 20)) {
+                        if(!(_la === 19 || _la === 22)) {
                         this.errorHandler.recoverInline(this);
                         }
                         else {
@@ -506,7 +506,7 @@ export class SimpleLangParser extends antlr.Parser {
                             this.consume();
                         }
                         this.state = 112;
-                        this.expression(6);
+                        this.expression(3);
                         }
                         break;
                     case 3:
@@ -514,12 +514,12 @@ export class SimpleLangParser extends antlr.Parser {
                         localContext = new LogicalContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, SimpleLangParser.RULE_expression);
                         this.state = 113;
-                        if (!(this.precpred(this.context, 4))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 4)");
+                        if (!(this.precpred(this.context, 1))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 1)");
                         }
                         this.state = 114;
                         _la = this.tokenStream.LA(1);
-                        if(!(_la === 21 || _la === 22)) {
+                        if(!(_la === 23 || _la === 24)) {
                         this.errorHandler.recoverInline(this);
                         }
                         else {
@@ -527,7 +527,7 @@ export class SimpleLangParser extends antlr.Parser {
                             this.consume();
                         }
                         this.state = 115;
-                        this.expression(5);
+                        this.expression(2);
                         }
                         break;
                     }
@@ -571,7 +571,7 @@ export class SimpleLangParser extends antlr.Parser {
                 this.state = 126;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                while (((((_la - 7)) & ~0x1F) === 0 && ((1 << (_la - 7)) & 117902849) !== 0)) {
+                while (((((_la - 7)) & ~0x1F) === 0 && ((1 << (_la - 7)) & 117718529) !== 0)) {
                     {
                     {
                     this.state = 123;
@@ -829,11 +829,11 @@ export class SimpleLangParser extends antlr.Parser {
     private expression_sempred(localContext: ExpressionContext | null, predIndex: number): boolean {
         switch (predIndex) {
         case 0:
-            return this.precpred(this.context, 6);
+            return this.precpred(this.context, 3);
         case 1:
-            return this.precpred(this.context, 5);
+            return this.precpred(this.context, 2);
         case 2:
-            return this.precpred(this.context, 4);
+            return this.precpred(this.context, 1);
         }
         return true;
     }
@@ -851,54 +851,54 @@ export class SimpleLangParser extends antlr.Parser {
         5,1,5,1,5,1,5,1,5,1,5,3,5,138,8,5,1,6,1,6,3,6,142,8,6,1,7,5,7,145,
         8,7,10,7,12,7,148,9,7,1,7,1,7,1,7,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,
         8,1,8,5,8,162,8,8,10,8,12,8,165,9,8,3,8,167,8,8,1,8,1,8,1,8,3,8,
-        172,8,8,1,8,0,1,8,9,0,2,4,6,8,10,12,14,16,0,3,1,0,18,19,2,0,16,16,
-        20,20,1,0,21,22,195,0,18,1,0,0,0,2,22,1,0,0,0,4,87,1,0,0,0,6,89,
-        1,0,0,0,8,105,1,0,0,0,10,137,1,0,0,0,12,141,1,0,0,0,14,146,1,0,0,
-        0,16,171,1,0,0,0,18,19,3,2,1,0,19,20,5,0,0,1,20,1,1,0,0,0,21,23,
-        3,4,2,0,22,21,1,0,0,0,23,24,1,0,0,0,24,22,1,0,0,0,24,25,1,0,0,0,
-        25,3,1,0,0,0,26,27,3,8,4,0,27,28,5,1,0,0,28,88,1,0,0,0,29,30,5,2,
-        0,0,30,31,3,16,8,0,31,32,5,3,0,0,32,33,5,33,0,0,33,34,5,4,0,0,34,
-        35,3,8,4,0,35,36,5,1,0,0,36,88,1,0,0,0,37,38,5,2,0,0,38,39,5,5,0,
-        0,39,40,3,16,8,0,40,41,5,3,0,0,41,42,5,33,0,0,42,43,5,4,0,0,43,44,
-        3,8,4,0,44,45,5,1,0,0,45,88,1,0,0,0,46,47,5,33,0,0,47,48,5,4,0,0,
-        48,49,3,8,4,0,49,50,5,1,0,0,50,88,1,0,0,0,51,52,5,6,0,0,52,53,5,
-        7,0,0,53,54,3,8,4,0,54,55,5,8,0,0,55,56,3,6,3,0,56,57,5,9,0,0,57,
-        58,3,6,3,0,58,88,1,0,0,0,59,60,5,10,0,0,60,61,5,7,0,0,61,62,3,8,
-        4,0,62,63,5,8,0,0,63,64,3,6,3,0,64,88,1,0,0,0,65,88,3,6,3,0,66,67,
-        5,11,0,0,67,68,3,8,4,0,68,69,5,1,0,0,69,88,1,0,0,0,70,71,5,12,0,
-        0,71,72,5,33,0,0,72,79,5,7,0,0,73,74,3,16,8,0,74,75,5,3,0,0,75,76,
-        5,33,0,0,76,78,1,0,0,0,77,73,1,0,0,0,78,81,1,0,0,0,79,77,1,0,0,0,
-        79,80,1,0,0,0,80,82,1,0,0,0,81,79,1,0,0,0,82,83,5,8,0,0,83,84,5,
-        13,0,0,84,85,3,16,8,0,85,86,3,6,3,0,86,88,1,0,0,0,87,26,1,0,0,0,
-        87,29,1,0,0,0,87,37,1,0,0,0,87,46,1,0,0,0,87,51,1,0,0,0,87,59,1,
-        0,0,0,87,65,1,0,0,0,87,66,1,0,0,0,87,70,1,0,0,0,88,5,1,0,0,0,89,
-        90,5,14,0,0,90,91,3,2,1,0,91,92,5,15,0,0,92,7,1,0,0,0,93,94,6,4,
-        -1,0,94,106,3,10,5,0,95,96,5,16,0,0,96,106,3,8,4,8,97,98,5,17,0,
-        0,98,106,3,8,4,7,99,100,5,23,0,0,100,106,5,33,0,0,101,102,5,24,0,
-        0,102,106,5,33,0,0,103,104,5,18,0,0,104,106,5,33,0,0,105,93,1,0,
-        0,0,105,95,1,0,0,0,105,97,1,0,0,0,105,99,1,0,0,0,105,101,1,0,0,0,
-        105,103,1,0,0,0,106,118,1,0,0,0,107,108,10,6,0,0,108,109,7,0,0,0,
-        109,117,3,8,4,7,110,111,10,5,0,0,111,112,7,1,0,0,112,117,3,8,4,6,
-        113,114,10,4,0,0,114,115,7,2,0,0,115,117,3,8,4,5,116,107,1,0,0,0,
-        116,110,1,0,0,0,116,113,1,0,0,0,117,120,1,0,0,0,118,116,1,0,0,0,
-        118,119,1,0,0,0,119,9,1,0,0,0,120,118,1,0,0,0,121,122,5,33,0,0,122,
-        126,5,7,0,0,123,125,3,8,4,0,124,123,1,0,0,0,125,128,1,0,0,0,126,
-        124,1,0,0,0,126,127,1,0,0,0,127,129,1,0,0,0,128,126,1,0,0,0,129,
-        138,5,8,0,0,130,131,5,7,0,0,131,132,3,8,4,0,132,133,5,8,0,0,133,
-        138,1,0,0,0,134,138,3,14,7,0,135,138,3,12,6,0,136,138,5,33,0,0,137,
-        121,1,0,0,0,137,130,1,0,0,0,137,134,1,0,0,0,137,135,1,0,0,0,137,
-        136,1,0,0,0,138,11,1,0,0,0,139,142,5,31,0,0,140,142,5,32,0,0,141,
-        139,1,0,0,0,141,140,1,0,0,0,142,13,1,0,0,0,143,145,5,33,0,0,144,
-        143,1,0,0,0,145,148,1,0,0,0,146,144,1,0,0,0,146,147,1,0,0,0,147,
-        149,1,0,0,0,148,146,1,0,0,0,149,150,5,25,0,0,150,151,3,6,3,0,151,
-        15,1,0,0,0,152,172,5,26,0,0,153,172,5,27,0,0,154,172,5,28,0,0,155,
-        172,5,29,0,0,156,157,5,12,0,0,157,166,5,7,0,0,158,163,3,16,8,0,159,
-        160,5,30,0,0,160,162,3,16,8,0,161,159,1,0,0,0,162,165,1,0,0,0,163,
-        161,1,0,0,0,163,164,1,0,0,0,164,167,1,0,0,0,165,163,1,0,0,0,166,
-        158,1,0,0,0,166,167,1,0,0,0,167,168,1,0,0,0,168,169,5,8,0,0,169,
-        170,5,13,0,0,170,172,3,16,8,0,171,152,1,0,0,0,171,153,1,0,0,0,171,
-        154,1,0,0,0,171,155,1,0,0,0,171,156,1,0,0,0,172,17,1,0,0,0,13,24,
-        79,87,105,116,118,126,137,141,146,163,166,171
+        172,8,8,1,8,0,1,8,9,0,2,4,6,8,10,12,14,16,0,3,2,0,18,18,21,21,2,
+        0,19,19,22,22,1,0,23,24,195,0,18,1,0,0,0,2,22,1,0,0,0,4,87,1,0,0,
+        0,6,89,1,0,0,0,8,105,1,0,0,0,10,137,1,0,0,0,12,141,1,0,0,0,14,146,
+        1,0,0,0,16,171,1,0,0,0,18,19,3,2,1,0,19,20,5,0,0,1,20,1,1,0,0,0,
+        21,23,3,4,2,0,22,21,1,0,0,0,23,24,1,0,0,0,24,22,1,0,0,0,24,25,1,
+        0,0,0,25,3,1,0,0,0,26,27,3,8,4,0,27,28,5,1,0,0,28,88,1,0,0,0,29,
+        30,5,2,0,0,30,31,3,16,8,0,31,32,5,3,0,0,32,33,5,33,0,0,33,34,5,4,
+        0,0,34,35,3,8,4,0,35,36,5,1,0,0,36,88,1,0,0,0,37,38,5,2,0,0,38,39,
+        5,5,0,0,39,40,3,16,8,0,40,41,5,3,0,0,41,42,5,33,0,0,42,43,5,4,0,
+        0,43,44,3,8,4,0,44,45,5,1,0,0,45,88,1,0,0,0,46,47,5,33,0,0,47,48,
+        5,4,0,0,48,49,3,8,4,0,49,50,5,1,0,0,50,88,1,0,0,0,51,52,5,6,0,0,
+        52,53,5,7,0,0,53,54,3,8,4,0,54,55,5,8,0,0,55,56,3,6,3,0,56,57,5,
+        9,0,0,57,58,3,6,3,0,58,88,1,0,0,0,59,60,5,10,0,0,60,61,5,7,0,0,61,
+        62,3,8,4,0,62,63,5,8,0,0,63,64,3,6,3,0,64,88,1,0,0,0,65,88,3,6,3,
+        0,66,67,5,11,0,0,67,68,3,8,4,0,68,69,5,1,0,0,69,88,1,0,0,0,70,71,
+        5,12,0,0,71,72,5,33,0,0,72,79,5,7,0,0,73,74,3,16,8,0,74,75,5,3,0,
+        0,75,76,5,33,0,0,76,78,1,0,0,0,77,73,1,0,0,0,78,81,1,0,0,0,79,77,
+        1,0,0,0,79,80,1,0,0,0,80,82,1,0,0,0,81,79,1,0,0,0,82,83,5,8,0,0,
+        83,84,5,13,0,0,84,85,3,16,8,0,85,86,3,6,3,0,86,88,1,0,0,0,87,26,
+        1,0,0,0,87,29,1,0,0,0,87,37,1,0,0,0,87,46,1,0,0,0,87,51,1,0,0,0,
+        87,59,1,0,0,0,87,65,1,0,0,0,87,66,1,0,0,0,87,70,1,0,0,0,88,5,1,0,
+        0,0,89,90,5,14,0,0,90,91,3,2,1,0,91,92,5,15,0,0,92,7,1,0,0,0,93,
+        94,6,4,-1,0,94,106,3,10,5,0,95,96,5,16,0,0,96,106,5,33,0,0,97,98,
+        5,17,0,0,98,106,5,33,0,0,99,100,5,18,0,0,100,106,5,33,0,0,101,102,
+        5,19,0,0,102,106,3,8,4,5,103,104,5,20,0,0,104,106,3,8,4,4,105,93,
+        1,0,0,0,105,95,1,0,0,0,105,97,1,0,0,0,105,99,1,0,0,0,105,101,1,0,
+        0,0,105,103,1,0,0,0,106,118,1,0,0,0,107,108,10,3,0,0,108,109,7,0,
+        0,0,109,117,3,8,4,4,110,111,10,2,0,0,111,112,7,1,0,0,112,117,3,8,
+        4,3,113,114,10,1,0,0,114,115,7,2,0,0,115,117,3,8,4,2,116,107,1,0,
+        0,0,116,110,1,0,0,0,116,113,1,0,0,0,117,120,1,0,0,0,118,116,1,0,
+        0,0,118,119,1,0,0,0,119,9,1,0,0,0,120,118,1,0,0,0,121,122,5,33,0,
+        0,122,126,5,7,0,0,123,125,3,8,4,0,124,123,1,0,0,0,125,128,1,0,0,
+        0,126,124,1,0,0,0,126,127,1,0,0,0,127,129,1,0,0,0,128,126,1,0,0,
+        0,129,138,5,8,0,0,130,131,5,7,0,0,131,132,3,8,4,0,132,133,5,8,0,
+        0,133,138,1,0,0,0,134,138,3,14,7,0,135,138,3,12,6,0,136,138,5,33,
+        0,0,137,121,1,0,0,0,137,130,1,0,0,0,137,134,1,0,0,0,137,135,1,0,
+        0,0,137,136,1,0,0,0,138,11,1,0,0,0,139,142,5,31,0,0,140,142,5,32,
+        0,0,141,139,1,0,0,0,141,140,1,0,0,0,142,13,1,0,0,0,143,145,5,33,
+        0,0,144,143,1,0,0,0,145,148,1,0,0,0,146,144,1,0,0,0,146,147,1,0,
+        0,0,147,149,1,0,0,0,148,146,1,0,0,0,149,150,5,25,0,0,150,151,3,6,
+        3,0,151,15,1,0,0,0,152,172,5,26,0,0,153,172,5,27,0,0,154,172,5,28,
+        0,0,155,172,5,29,0,0,156,157,5,12,0,0,157,166,5,7,0,0,158,163,3,
+        16,8,0,159,160,5,30,0,0,160,162,3,16,8,0,161,159,1,0,0,0,162,165,
+        1,0,0,0,163,161,1,0,0,0,163,164,1,0,0,0,164,167,1,0,0,0,165,163,
+        1,0,0,0,166,158,1,0,0,0,166,167,1,0,0,0,167,168,1,0,0,0,168,169,
+        5,8,0,0,169,170,5,13,0,0,170,172,3,16,8,0,171,152,1,0,0,0,171,153,
+        1,0,0,0,171,154,1,0,0,0,171,155,1,0,0,0,171,156,1,0,0,0,172,17,1,
+        0,0,0,13,24,79,87,105,116,118,126,137,141,146,163,166,171
     ];
 
     private static __ATN: antlr.ATN;
@@ -1322,32 +1322,6 @@ export class ExpressionContext extends antlr.ParserRuleContext {
         super.copyFrom(ctx);
     }
 }
-export class NotContext extends ExpressionContext {
-    public constructor(ctx: ExpressionContext) {
-        super(ctx.parent, ctx.invokingState);
-        super.copyFrom(ctx);
-    }
-    public expression(): ExpressionContext {
-        return this.getRuleContext(0, ExpressionContext)!;
-    }
-    public override enterRule(listener: SimpleLangListener): void {
-        if(listener.enterNot) {
-             listener.enterNot(this);
-        }
-    }
-    public override exitRule(listener: SimpleLangListener): void {
-        if(listener.exitNot) {
-             listener.exitNot(this);
-        }
-    }
-    public override accept<Result>(visitor: SimpleLangVisitor<Result>): Result | null {
-        if (visitor.visitNot) {
-            return visitor.visitNot(this);
-        } else {
-            return visitor.visitChildren(this);
-        }
-    }
-}
 export class MutBorrowContext extends ExpressionContext {
     public constructor(ctx: ExpressionContext) {
         super(ctx.parent, ctx.invokingState);
@@ -1369,6 +1343,32 @@ export class MutBorrowContext extends ExpressionContext {
     public override accept<Result>(visitor: SimpleLangVisitor<Result>): Result | null {
         if (visitor.visitMutBorrow) {
             return visitor.visitMutBorrow(this);
+        } else {
+            return visitor.visitChildren(this);
+        }
+    }
+}
+export class NotContext extends ExpressionContext {
+    public constructor(ctx: ExpressionContext) {
+        super(ctx.parent, ctx.invokingState);
+        super.copyFrom(ctx);
+    }
+    public expression(): ExpressionContext {
+        return this.getRuleContext(0, ExpressionContext)!;
+    }
+    public override enterRule(listener: SimpleLangListener): void {
+        if(listener.enterNot) {
+             listener.enterNot(this);
+        }
+    }
+    public override exitRule(listener: SimpleLangListener): void {
+        if(listener.exitNot) {
+             listener.exitNot(this);
+        }
+    }
+    public override accept<Result>(visitor: SimpleLangVisitor<Result>): Result | null {
+        if (visitor.visitNot) {
+            return visitor.visitNot(this);
         } else {
             return visitor.visitChildren(this);
         }

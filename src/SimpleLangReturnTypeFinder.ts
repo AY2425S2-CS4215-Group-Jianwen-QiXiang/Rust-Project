@@ -89,6 +89,9 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
         if (ctx instanceof ConstDeclContext) {
             return [{name : ctx.NAME().getText(), type: ctx.type().getText(),
                 dropped: false, mutable: false, borrowState:{mutableBorrows:0, immutableBorrows:0}}];
+        } else if (ctx instanceof MutConstDeclContext) {
+            return [{name : ctx.NAME().getText(), type: ctx.type().getText(),
+                dropped: false, mutable: true, borrowState:{mutableBorrows:0, immutableBorrows:0}}];
         } else if (ctx instanceof FunctionDeclContext) {
             let parameterTypes: TypeObject[] = []
             let returnType: TypeObject
@@ -104,6 +107,7 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
             return []
         }
     }
+
 
 
     scan_sequence(ctx : SequenceContext, ce : TypeClosure[][]) : TypeClosure[] {
@@ -155,6 +159,14 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
             let declared_type = ctx.type().getText()
             let name = ctx.NAME().getText()
             let actual_type = this.visit(ctx.expression())(ce)
+            if (ctx.expression() instanceof VariableContext) {
+                const rightName = (ctx.expression() as VariableContext).NAME().getText();
+                const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
+                // Only move if it's not a reference
+                if (rightVar.type !== 'int' && rightVar.type !== 'bool') {
+                    rightVar.dropped = true;
+                }
+            }
             if (declared_type == actual_type.type) {
                 return actual_type
             } else {
@@ -379,6 +391,14 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
             let declared_type = ctx.type().getText()
             let name = ctx.NAME().getText()
             let actual_type = this.visit(ctx.expression())(ce)
+            if (ctx.expression() instanceof VariableContext) {
+                const rightName = (ctx.expression() as VariableContext).NAME().getText();
+                const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
+                // Only move if it's not a reference
+                if (rightVar.type !== 'int' && rightVar.type !== 'bool') {
+                    rightVar.dropped = true;
+                }
+            }
             if (declared_type == actual_type.type) {
                 return actual_type
             } else {
