@@ -25,17 +25,21 @@ import { LiteralsContext } from "./SimpleLangParser.js";
 import { LogicalContext } from "./SimpleLangParser.js";
 import { FunctionAppContext } from "./SimpleLangParser.js";
 import { NotContext } from "./SimpleLangParser.js";
+import { ComparisonContext } from "./SimpleLangParser.js";
 import { NegateContext } from "./SimpleLangParser.js";
+import { EqualityContext } from "./SimpleLangParser.js";
 import { LambdaContext } from "./SimpleLangParser.js";
 import { DereferenceContext } from "./SimpleLangParser.js";
 import { IntegerContext } from "./SimpleLangParser.js";
 import { BooleanContext } from "./SimpleLangParser.js";
+import { UndefinedContext } from "./SimpleLangParser.js";
 import { LambdaExprContext } from "./SimpleLangParser.js";
 import { IntTypeContext } from "./SimpleLangParser.js";
 import { BoolTypeContext } from "./SimpleLangParser.js";
 import { IntPointerTypeContext } from "./SimpleLangParser.js";
 import { BoolPointerTypeContext } from "./SimpleLangParser.js";
 import { FunctionTypeContext } from "./SimpleLangParser.js";
+import { UndefinedTypeContext } from "./SimpleLangParser.js";
 
 
 /**
@@ -302,6 +306,18 @@ export class SimpleLangListener implements ParseTreeListener {
      */
     exitNot?: (ctx: NotContext) => void;
     /**
+     * Enter a parse tree produced by the `Comparison`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    enterComparison?: (ctx: ComparisonContext) => void;
+    /**
+     * Exit a parse tree produced by the `Comparison`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    exitComparison?: (ctx: ComparisonContext) => void;
+    /**
      * Enter a parse tree produced by the `Negate`
      * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
@@ -313,6 +329,18 @@ export class SimpleLangListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitNegate?: (ctx: NegateContext) => void;
+    /**
+     * Enter a parse tree produced by the `Equality`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    enterEquality?: (ctx: EqualityContext) => void;
+    /**
+     * Exit a parse tree produced by the `Equality`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    exitEquality?: (ctx: EqualityContext) => void;
     /**
      * Enter a parse tree produced by the `Lambda`
      * labeled alternative in `SimpleLangParser.expression`.
@@ -361,6 +389,18 @@ export class SimpleLangListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitBoolean?: (ctx: BooleanContext) => void;
+    /**
+     * Enter a parse tree produced by the `undefined`
+     * labeled alternative in `SimpleLangParser.literal`.
+     * @param ctx the parse tree
+     */
+    enterUndefined?: (ctx: UndefinedContext) => void;
+    /**
+     * Exit a parse tree produced by the `undefined`
+     * labeled alternative in `SimpleLangParser.literal`.
+     * @param ctx the parse tree
+     */
+    exitUndefined?: (ctx: UndefinedContext) => void;
     /**
      * Enter a parse tree produced by `SimpleLangParser.lambdaExpr`.
      * @param ctx the parse tree
@@ -431,6 +471,18 @@ export class SimpleLangListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitFunctionType?: (ctx: FunctionTypeContext) => void;
+    /**
+     * Enter a parse tree produced by the `UndefinedType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    enterUndefinedType?: (ctx: UndefinedTypeContext) => void;
+    /**
+     * Exit a parse tree produced by the `UndefinedType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    exitUndefinedType?: (ctx: UndefinedTypeContext) => void;
 
     visitTerminal(node: TerminalNode): void {}
     visitErrorNode(node: ErrorNode): void {}

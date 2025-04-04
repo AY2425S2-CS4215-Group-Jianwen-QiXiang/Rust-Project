@@ -25,17 +25,21 @@ import { LiteralsContext } from "./SimpleLangParser.js";
 import { LogicalContext } from "./SimpleLangParser.js";
 import { FunctionAppContext } from "./SimpleLangParser.js";
 import { NotContext } from "./SimpleLangParser.js";
+import { ComparisonContext } from "./SimpleLangParser.js";
 import { NegateContext } from "./SimpleLangParser.js";
+import { EqualityContext } from "./SimpleLangParser.js";
 import { LambdaContext } from "./SimpleLangParser.js";
 import { DereferenceContext } from "./SimpleLangParser.js";
 import { IntegerContext } from "./SimpleLangParser.js";
 import { BooleanContext } from "./SimpleLangParser.js";
+import { UndefinedContext } from "./SimpleLangParser.js";
 import { LambdaExprContext } from "./SimpleLangParser.js";
 import { IntTypeContext } from "./SimpleLangParser.js";
 import { BoolTypeContext } from "./SimpleLangParser.js";
 import { IntPointerTypeContext } from "./SimpleLangParser.js";
 import { BoolPointerTypeContext } from "./SimpleLangParser.js";
 import { FunctionTypeContext } from "./SimpleLangParser.js";
+import { UndefinedTypeContext } from "./SimpleLangParser.js";
 
 
 /**
@@ -198,12 +202,26 @@ export class SimpleLangVisitor<Result> extends AbstractParseTreeVisitor<Result> 
      */
     visitNot?: (ctx: NotContext) => Result;
     /**
+     * Visit a parse tree produced by the `Comparison`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitComparison?: (ctx: ComparisonContext) => Result;
+    /**
      * Visit a parse tree produced by the `Negate`
      * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
      * @return the visitor result
      */
     visitNegate?: (ctx: NegateContext) => Result;
+    /**
+     * Visit a parse tree produced by the `Equality`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitEquality?: (ctx: EqualityContext) => Result;
     /**
      * Visit a parse tree produced by the `Lambda`
      * labeled alternative in `SimpleLangParser.expression`.
@@ -232,6 +250,13 @@ export class SimpleLangVisitor<Result> extends AbstractParseTreeVisitor<Result> 
      * @return the visitor result
      */
     visitBoolean?: (ctx: BooleanContext) => Result;
+    /**
+     * Visit a parse tree produced by the `undefined`
+     * labeled alternative in `SimpleLangParser.literal`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitUndefined?: (ctx: UndefinedContext) => Result;
     /**
      * Visit a parse tree produced by `SimpleLangParser.lambdaExpr`.
      * @param ctx the parse tree
@@ -273,5 +298,12 @@ export class SimpleLangVisitor<Result> extends AbstractParseTreeVisitor<Result> 
      * @return the visitor result
      */
     visitFunctionType?: (ctx: FunctionTypeContext) => Result;
+    /**
+     * Visit a parse tree produced by the `UndefinedType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitUndefinedType?: (ctx: UndefinedTypeContext) => Result;
 }
 

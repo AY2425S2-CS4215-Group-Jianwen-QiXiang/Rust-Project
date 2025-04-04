@@ -31,11 +31,14 @@ expression: NAME                                         # Variable
           | expression ('*' | '/' ) expression        # MulDiv
           | expression ('+' | '-') expression         # AddSub
           | expression ('&&' | '||') expression       # Logical
+          | expression ('<' | '<=' | '>' | '>=' ) expression     # Comparison
+          | expression ('==' | '!=' )  expression               # Equality
           ;
 
 
 literal: INTEGER # integer
        | BOOLEAN # boolean
+       | 'undefined' # undefined
        ;
 
 lambdaExpr: (NAME*) '=>' block;
@@ -45,6 +48,7 @@ type: 'int' #IntType
     | '&int' #IntPointerType
     | '&bool' #BoolPointerType
     | 'fn' '(' (type (',' type)*)? ')' '->' type #FunctionType
+    | 'undefined'    #UndefinedType
     ;
 
 // Lexer rules

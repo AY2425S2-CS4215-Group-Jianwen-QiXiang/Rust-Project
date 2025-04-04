@@ -171,7 +171,7 @@ export class Evaluator {
 
 
         // Send the result to the REPL
-        return this.machine.run().toString()
+        return String(this.machine.run())
     }
 
 }

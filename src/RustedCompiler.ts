@@ -4,11 +4,14 @@ import { CharStream, CommonTokenStream, AbstractParseTreeVisitor } from 'antlr4n
 import { SimpleLangLexer } from './parser/src/SimpleLangLexer';
 import { SimpleLangTypeChecker} from  './SimpleLangTypeChecker'
 import {
+    EqualityContext,
+    ComparisonContext,
     BorrowContext,
     MutBorrowContext,
     DereferenceContext,
     AssignmentContext,
     MutConstDeclContext,
+    UndefinedContext,
     FunctionAppContext,
     FunctionDeclContext,
     ReturnStmtContext,
@@ -188,7 +191,7 @@ export class RustedCompiler extends AbstractParseTreeVisitor<StringMatrixFunctio
             this.instruction[this.wc++] = {tag:"POP"}
             this.instruction[this.wc++] = goto_instruction
             jof_instruction.address = this.wc
-            this.instruction[this.wc++] = {tag:"LDC", value: "undefined"}
+            this.instruction[this.wc++] = {tag:"LDC", value: undefined}
         }
 
     }
@@ -320,6 +323,24 @@ export class RustedCompiler extends AbstractParseTreeVisitor<StringMatrixFunctio
 
     }
 
+    visitComparison(ctx: ComparisonContext) : StringMatrixFunction {
+        return ce => {
+            this.visit(ctx.expression(0))(ce)
+            this.visit(ctx.expression(1))(ce)
+            let op = ctx.getChild(1).getText()
+            this.instruction[this.wc++] = {tag:"BINOP", op:op}
+        }
+    }
+
+    visitEquality(ctx: EqualityContext) : StringMatrixFunction {
+        return ce => {
+            this.visit(ctx.expression(0))(ce)
+            this.visit(ctx.expression(1))(ce)
+            let op = ctx.getChild(1).getText()
+            this.instruction[this.wc++] = {tag:"BINOP", op:op}
+        }
+    }
+
     visitLambda(ctx: LambdaContext) : StringMatrixFunction {
         return this.visit(ctx.lambdaExpr())
     }
@@ -343,6 +364,12 @@ export class RustedCompiler extends AbstractParseTreeVisitor<StringMatrixFunctio
     visitBoolean(ctx: BooleanContext) : StringMatrixFunction {
         return ce => {
             this.instruction[this.wc++] = {tag: "LDC", value: this.parseBool(ctx.BOOLEAN().getText())}
+        }
+    }
+
+    visitUndefined(ctx: UndefinedContext) : StringMatrixFunction {
+        return ce => {
+            this.instruction[this.wc++] = {tag: "LDC", value: undefined }
         }
     }
 

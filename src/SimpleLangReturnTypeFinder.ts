@@ -33,7 +33,7 @@ import {
     ExpressionContext,
     AssignmentContext,
     DereferenceContext,
-    MutConstDeclContext
+    MutConstDeclContext, UndefinedTypeContext, UndefinedContext, ComparisonContext, EqualityContext
 } from "./parser/src/SimpleLangParser";
 
 type TypeObject = {
@@ -502,6 +502,30 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
 
     }
 
+    visitComparison(ctx: ComparisonContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            let op1_type = this.visit(ctx.expression(0))(ce)
+            let op2_type = this.visit(ctx.expression(1))(ce)
+            let op = ctx.getChild(1).getText()
+            if (op1_type.type !== "int" || op2_type.type !== "int") {
+                throw new Error(`Expect two numbers for ${op}, but got ${op1_type.type} and ${op2_type.type}`)
+            }
+            return {type : "bool"}
+        }
+    }
+
+    visitEquality(ctx: EqualityContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            let op1_type = this.visit(ctx.expression(0))(ce)
+            let op2_type = this.visit(ctx.expression(1))(ce)
+            let op = ctx.getChild(1).getText()
+            if (! (op1_type.type === op2_type.type && (op1_type.type === "int" || op1_type.type === "bool")) ) {
+                throw new Error(`Expect two numbers or booleans for ${op}, but got ${op1_type.type} and ${op2_type.type}`)
+            }
+            return {type : "bool"}
+        }
+    }
+
     visitLambda(ctx: LambdaContext) : CompileTimeTypeEnvironmentToType {
         return this.visit(ctx.lambdaExpr())
     }
@@ -515,6 +539,12 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
     visitBoolean(ctx: BooleanContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
             return {type: "bool"}
+        }
+    }
+
+    visitUndefined(ctx: UndefinedContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            return {type: "undefined"}
         }
     }
 
@@ -534,6 +564,12 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
     visitBoolType(ctx: BoolTypeContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
             return {type: "bool"}
+        }
+    }
+
+    visitUndefinedType (ctx : UndefinedTypeContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            return {type: "Undefined"}
         }
     }
 
