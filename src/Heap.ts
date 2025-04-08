@@ -246,9 +246,13 @@ export class Heap {
     is_Pointer = address =>
         this.heap_get_tag(address) === this.Pointer_tag
 
-    dereference_Pointer =
-            n => this.heap_get_Environment_value(n.env_address, [n.frame_index, n.value_index])
+    get_Pointer = address => {
+        let env_address = this.heap_get_child(address, 0);
+        let frame_index = this.heap_get_child(address, 1);
+        let value_index = this.heap_get_child(address, 2);
+        return {env_address : env_address, frame_index: frame_index, value_index: value_index}
 
+    }
     address_to_JS_value = x =>
         this.is_Boolean(x)
             ? (this.is_True(x) ? true : false)
@@ -263,7 +267,7 @@ export class Heap {
                             : this.is_Closure(x)
                                 ? "<closure>"
                                 : this.is_Pointer(x)
-                                    ? this.heap_get(x + 1)
+                                    ? this.get_Pointer(x)
                                     : "unknown word tag: " + this.heap_get_tag(x)
 
 
@@ -277,7 +281,7 @@ export class Heap {
                     : (x === null)
                         ? this.Null
                         : (is_Pointer_Type(x))
-                            ? this.heap_allocate_Pointer(x.address)
+                            ? this.heap_allocate_Pointer(x)
                             : "unknown type: " + (typeof x)
     }
 

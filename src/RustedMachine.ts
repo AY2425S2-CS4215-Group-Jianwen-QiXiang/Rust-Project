@@ -1,5 +1,10 @@
 import {Heap} from "./Heap";
 
+type Pointer = {
+    env_address: number
+    frame_index: number
+    value_index: number
+};
 
 export class RustedMachine {
     instructions: any[];
@@ -100,9 +105,29 @@ export class RustedMachine {
                     throw new Error(`access of unassigned variable ${instr.name}`)
                 this.push(this.OS, val)
             },
+
+        LDP: instr => {
+            const frame_index = instr.pos[0]
+            const value_index = instr.pos[1]
+            this.push(this.OS, this.HEAP.JS_value_to_address({env_address: this.E,
+            frame_index: frame_index, value_index: value_index}))
+        },
+        DEREF: instr => {
+            const pop_result = this.OS.pop()
+            const pointer: any = this.HEAP.address_to_JS_value(pop_result)
+            const val = this.HEAP.heap_get_Environment_value(pointer.env_address,
+                [pointer.frame_index, pointer.value_index])
+            this.push(this.OS, val)
+        },
         ASSIGN:
             instr =>
                 this.HEAP.heap_set_Environment_value(this.E, instr.pos, this.peek(this.OS,0)),
+        PTRASSIGN: instr => {
+            const ptr: any = this.HEAP.address_to_JS_value(this.OS.pop())
+            const val = this.peek(this.OS, 0)
+            this.HEAP.heap_set_Environment_value(ptr.env_address, [ptr.frame_index, ptr.value_index],val)
+
+        },
         LDF:
             instr => {
                 const closure_address =

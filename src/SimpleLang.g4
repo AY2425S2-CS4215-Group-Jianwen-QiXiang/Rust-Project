@@ -9,6 +9,7 @@ statement: expression ';'                           # ExprStmt
          | 'let' type ':' NAME '=' expression ';'      # ConstDecl
          | 'let' 'mut' type ':' NAME '=' expression ';' # MutConstDecl
          | NAME '=' expression ';'                     # Assignment
+         | '*'NAME '=' expression ';'                  # PtrAssignment
          | 'if' '(' expression ')' block 'else' block # IfStmt
          | 'while' '(' expression ')' block         # WhileStmt
          | block   # BlockStmt

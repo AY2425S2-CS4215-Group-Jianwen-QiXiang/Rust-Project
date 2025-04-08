@@ -1,9 +1,10 @@
 import { BasicEvaluator } from "conductor/dist/conductor/runner";
 import { IRunnerPlugin } from "conductor/dist/conductor/runner/types";
-import { CharStream, CommonTokenStream, AbstractParseTreeVisitor } from 'antlr4ng';
+import {CharStream, CommonTokenStream, AbstractParseTreeVisitor, ParseTree} from 'antlr4ng';
 import { SimpleLangLexer } from './parser/src/SimpleLangLexer';
 import { SimpleLangTypeChecker} from  './SimpleLangTypeChecker'
 import {
+    PtrAssignmentContext,
     EqualityContext,
     ComparisonContext,
     BorrowContext,
@@ -104,6 +105,8 @@ export class RustedCompiler extends AbstractParseTreeVisitor<StringMatrixFunctio
             return [ctx.NAME().getText()]
         } else if (ctx instanceof FunctionDeclContext) {
             return [ctx.NAME()[0].getText()]
+        } else if (ctx instanceof MutConstDeclContext) {
+            return [ctx.NAME().getText()]
         } else {
             return []
         }
@@ -164,6 +167,34 @@ export class RustedCompiler extends AbstractParseTreeVisitor<StringMatrixFunctio
                 pos: this.compile_time_environment_position(ce, name)};
         }
     }
+
+    visitMutConstDecl(ctx: ConstDeclContext) : StringMatrixFunction {
+        return ce => {
+            let name = ctx.NAME().getText()
+            this.visit(ctx.expression())(ce)
+            this.instruction[this.wc++] = {tag: "ASSIGN", name: name,
+                pos: this.compile_time_environment_position(ce, name)};
+        }
+    }
+
+    visitAssignment(ctx: AssignmentContext) : StringMatrixFunction {
+        return ce => {
+            let name = ctx.NAME().getText()
+            this.visit(ctx.expression())(ce)
+            this.instruction[this.wc++] = {tag: "ASSIGN", name: name,
+                pos: this.compile_time_environment_position(ce, name)};
+        }
+    }
+
+    visitPtrAssignment(ctx: PtrAssignmentContext) : StringMatrixFunction {
+        return ce => {
+            let name = ctx.NAME().getText()
+            this.visit(ctx.expression())(ce)
+            this.instruction[this.wc++] = {tag: "LD", name: name, pos : this.compile_time_environment_position(ce, name)}
+            this.instruction[this.wc++] = {tag: "PTRASSIGN"};
+        }
+    }
+
 
     visitIfStmt(ctx: IfStmtContext) : StringMatrixFunction {
         return ce => {
@@ -256,6 +287,30 @@ export class RustedCompiler extends AbstractParseTreeVisitor<StringMatrixFunctio
         return  ce => {
             let name = ctx.NAME().getText()
             this.instruction[this.wc++] = {tag: "LD", name: name, pos : this.compile_time_environment_position(ce, name)}
+        }
+    }
+
+    visitBorrow(ctx: BorrowContext) : StringMatrixFunction {
+        return ce => {
+            let name = ctx.NAME().getText()
+            let pos = this.compile_time_environment_position(ce, name)
+            this.instruction[this.wc++] = {tag: "LDP", pos : pos}
+        }
+    }
+
+    visitMutBorrow(ctx: MutBorrowContext) : StringMatrixFunction {
+        return ce => {
+            let name = ctx.NAME().getText()
+            let pos = this.compile_time_environment_position(ce, name)
+            this.instruction[this.wc++] = {tag: "LDP", pos : pos}
+        }
+    }
+
+    visitDereference(ctx: DereferenceContext) : StringMatrixFunction {
+        return ce => {
+            let name = ctx.NAME().getText()
+            this.instruction[this.wc++] = {tag: "LD", name: name, pos : this.compile_time_environment_position(ce, name)}
+            this.instruction[this.wc++] = {tag: "DEREF"}
         }
     }
 

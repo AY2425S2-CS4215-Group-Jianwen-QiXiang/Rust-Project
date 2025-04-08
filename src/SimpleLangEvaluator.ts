@@ -159,19 +159,25 @@ export class Evaluator {
 
         // Parse the input
         const tree = (new Parser(str)).parse();
-
-        console.log(tree.toStringTree())
-
+        try {
         let global_ce: string[][] = []
         let global_type_ce: TypeClosure[][] = []
         console.log(this.typeChecker.visit(tree)(global_type_ce))
         this.visitor.visit(tree)(global_ce)
-
+            //console.log(this.visitor.instructions_for_display());
         this.machine = new RustedMachine(this.visitor.instruction)
 
 
         // Send the result to the REPL
         return String(this.machine.run())
+        }   catch (error) {
+        // Handle errors and send them to the REPL
+        if (error instanceof Error) {
+            return (`Error: ${error.message}`);
+        } else {
+            return (`Error: ${String(error)}`);
+        }
+    }
     }
 
 }

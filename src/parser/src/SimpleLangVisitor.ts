@@ -9,6 +9,7 @@ import { ExprStmtContext } from "./SimpleLangParser.js";
 import { ConstDeclContext } from "./SimpleLangParser.js";
 import { MutConstDeclContext } from "./SimpleLangParser.js";
 import { AssignmentContext } from "./SimpleLangParser.js";
+import { PtrAssignmentContext } from "./SimpleLangParser.js";
 import { IfStmtContext } from "./SimpleLangParser.js";
 import { WhileStmtContext } from "./SimpleLangParser.js";
 import { BlockStmtContext } from "./SimpleLangParser.js";
@@ -90,6 +91,13 @@ export class SimpleLangVisitor<Result> extends AbstractParseTreeVisitor<Result> 
      * @return the visitor result
      */
     visitAssignment?: (ctx: AssignmentContext) => Result;
+    /**
+     * Visit a parse tree produced by the `PtrAssignment`
+     * labeled alternative in `SimpleLangParser.statement`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPtrAssignment?: (ctx: PtrAssignmentContext) => Result;
     /**
      * Visit a parse tree produced by the `IfStmt`
      * labeled alternative in `SimpleLangParser.statement`.

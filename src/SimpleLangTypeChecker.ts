@@ -41,7 +41,7 @@ import {
     StatementContext,
     SequenceContext,
     ProgContext,
-    SimpleLangParser, IntTypeContext, BoolTypeContext, FunctionTypeContext,
+    SimpleLangParser, IntTypeContext, BoolTypeContext, FunctionTypeContext, PtrAssignmentContext,
 } from './parser/src/SimpleLangParser';
 import { SimpleLangVisitor } from './parser/src/SimpleLangVisitor';
 import {type} from "node:os";
@@ -384,6 +384,36 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             }
 
             return {type: variable.type, parameterType: variable.parameterType, returnType: variable.returnType};
+        }
+    }
+
+    visitPtrAssignment(ctx: PtrAssignmentContext): CompileTimeTypeEnvironmentToType {
+        return ce => {
+            const name = ctx.NAME().getText();
+            const variable = this.compile_time_environment_type_look_up(ce, name);
+            const innerType = variable.type
+
+            if (!innerType.startsWith('&')) {
+                throw new Error(`Cannot dereference non-reference type '${innerType}'`);
+            }
+
+            // Extract the base type (remove the reference)
+            const baseType = innerType.replace(/^&(mut )?/, '');
+
+            // Check if this is an assignment target
+            const isAssignmentTarget = this.isAssignmentTarget(ctx);
+
+            // If it's an assignment target, ensure the reference is mutable
+            if (isAssignmentTarget && !innerType.includes('mut')) {
+                throw new Error(`Cannot modify through an immutable reference`);
+            }
+
+            const rightType = this.visit(ctx.expression())(ce);
+            if (baseType !== rightType.type) {
+                throw new Error(`Type mismatch: expected '${baseType}', found '${rightType.type}'`);
+            }
+
+            return {type: baseType};
         }
     }
 
