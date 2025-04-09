@@ -263,11 +263,15 @@ export class Heap {
         this.heap_get_tag(address) === this.String_tag
 
     heap_allocate_string = n => {
-        this.string_to_number[n] = this.next_string_index
-        const string_address = this.heap_allocate(this.String_tag, 2)
-        this.heap_set_child(string_address, 0, this.next_string_index)
-        this.number_to_string[this.next_string_index++] = n
-        return string_address
+        if (this.string_to_number[n] === undefined) {
+            this.string_to_number[n] = this.next_string_index
+            const string_address = this.heap_allocate(this.String_tag, 2)
+            this.heap_set_child(string_address, 0, this.next_string_index)
+            this.number_to_string[this.next_string_index++] = n
+            return string_address
+        } else {
+            return this.string_to_number[n]
+        }
     }
 
     get_string = address => {
