@@ -24,6 +24,7 @@ import { AddSubContext } from "./SimpleLangParser.js";
 import { ParensContext } from "./SimpleLangParser.js";
 import { LiteralsContext } from "./SimpleLangParser.js";
 import { LogicalContext } from "./SimpleLangParser.js";
+import { StringContext } from "./SimpleLangParser.js";
 import { FunctionAppContext } from "./SimpleLangParser.js";
 import { NotContext } from "./SimpleLangParser.js";
 import { ComparisonContext } from "./SimpleLangParser.js";
@@ -39,6 +40,11 @@ import { IntTypeContext } from "./SimpleLangParser.js";
 import { BoolTypeContext } from "./SimpleLangParser.js";
 import { IntPointerTypeContext } from "./SimpleLangParser.js";
 import { BoolPointerTypeContext } from "./SimpleLangParser.js";
+import { IntMutPointerTypeContext } from "./SimpleLangParser.js";
+import { BoolMutPointerTypeContext } from "./SimpleLangParser.js";
+import { StringTypeContext } from "./SimpleLangParser.js";
+import { StringPointerTypeContext } from "./SimpleLangParser.js";
+import { StringMutPointerTypeContext } from "./SimpleLangParser.js";
 import { FunctionTypeContext } from "./SimpleLangParser.js";
 import { UndefinedTypeContext } from "./SimpleLangParser.js";
 
@@ -295,6 +301,18 @@ export class SimpleLangListener implements ParseTreeListener {
      */
     exitLogical?: (ctx: LogicalContext) => void;
     /**
+     * Enter a parse tree produced by the `String`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    enterString?: (ctx: StringContext) => void;
+    /**
+     * Exit a parse tree produced by the `String`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     */
+    exitString?: (ctx: StringContext) => void;
+    /**
      * Enter a parse tree produced by the `FunctionApp`
      * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
@@ -472,6 +490,66 @@ export class SimpleLangListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitBoolPointerType?: (ctx: BoolPointerTypeContext) => void;
+    /**
+     * Enter a parse tree produced by the `IntMutPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    enterIntMutPointerType?: (ctx: IntMutPointerTypeContext) => void;
+    /**
+     * Exit a parse tree produced by the `IntMutPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    exitIntMutPointerType?: (ctx: IntMutPointerTypeContext) => void;
+    /**
+     * Enter a parse tree produced by the `BoolMutPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    enterBoolMutPointerType?: (ctx: BoolMutPointerTypeContext) => void;
+    /**
+     * Exit a parse tree produced by the `BoolMutPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    exitBoolMutPointerType?: (ctx: BoolMutPointerTypeContext) => void;
+    /**
+     * Enter a parse tree produced by the `StringType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    enterStringType?: (ctx: StringTypeContext) => void;
+    /**
+     * Exit a parse tree produced by the `StringType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    exitStringType?: (ctx: StringTypeContext) => void;
+    /**
+     * Enter a parse tree produced by the `StringPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    enterStringPointerType?: (ctx: StringPointerTypeContext) => void;
+    /**
+     * Exit a parse tree produced by the `StringPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    exitStringPointerType?: (ctx: StringPointerTypeContext) => void;
+    /**
+     * Enter a parse tree produced by the `StringMutPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    enterStringMutPointerType?: (ctx: StringMutPointerTypeContext) => void;
+    /**
+     * Exit a parse tree produced by the `StringMutPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     */
+    exitStringMutPointerType?: (ctx: StringMutPointerTypeContext) => void;
     /**
      * Enter a parse tree produced by the `FunctionType`
      * labeled alternative in `SimpleLangParser.type`.
