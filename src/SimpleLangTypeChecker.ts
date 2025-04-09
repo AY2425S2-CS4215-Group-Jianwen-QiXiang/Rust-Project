@@ -61,7 +61,7 @@ type TypeClosure = {
         mutableBorrows: number;
         immutableBorrows: number;
     };
-    borrowFrom?: string;
+    borrowFrom?: TypeClosure;
     parameterType?: TypeObject[];
     returnType?: TypeObject;
 };
@@ -445,7 +445,24 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
         return ce => {
             let vs = this.scan_sequence(ctx.sequence(), ce)
             let e = this.compile_time_environment_extend(vs, ce)
-            return this.visit(ctx.sequence())(e);
+            const result = this.visit(ctx.sequence())(e);
+
+            for (const v of vs) {
+                if (v.borrowFrom) {
+                    // This local variable borrowed from another variable
+                    const borrowedVariable = v.borrowFrom;
+                    
+                    // Determine what type of borrow it was and decrement the appropriate counter
+                    if (v.type.includes('*mut')) {
+                        // It was a mutable borrow
+                        borrowedVariable.borrowState.mutableBorrows--;
+                    } else if (v.type.startsWith('*')) {
+                        // It was an immutable borrow
+                        borrowedVariable.borrowState.immutableBorrows--;
+                    }
+                }
+            }
+            return result
         }
     }
 
