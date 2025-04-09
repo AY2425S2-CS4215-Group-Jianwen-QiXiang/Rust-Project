@@ -297,8 +297,8 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
             variable.borrowState.immutableBorrows++;
 
             const innerType = variable.type
-            if (innerType !== "int" && innerType !== "bool") {
-                throw new Error(`Can only create pointer for int and bool, but got ${JSON.stringify(innerType)}`)
+            if (innerType !== "int" && innerType !== "bool" && innerType !== "string") {
+                throw new Error(`Can only create pointer for int, bool, and string, but got ${JSON.stringify(innerType)}`)
             }
             return {type: '*'+innerType};
         };
@@ -324,8 +324,8 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
             variable.borrowState.mutableBorrows++;
 
             const innerType = variable.type
-            if (innerType !== "int" && innerType !== "bool") {
-                throw new Error(`Can only create pointer for int and bool, but got ${JSON.stringify(innerType)}`)
+            if (innerType !== "int" && innerType !== "bool" && innerType !== "string") {
+                throw new Error(`Can only create pointer for int, bool, and string, but got ${JSON.stringify(innerType)}`)
             }
             // Check if the inner expression can be mutably borrowed
             if (innerType.startsWith('*')) {
@@ -578,6 +578,12 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
         }
     }
 
+    visitString(ctx: StringContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            return {type: "string"}
+        }
+    }
+
     visitUndefined(ctx: UndefinedContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
             return {type: "undefined"}
@@ -623,6 +629,24 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
     visitIntMutPointerType(ctx: IntMutPointerTypeContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
             return {type: "*mut int"}
+        }
+    }
+
+    visitStringType(ctx: StringTypeContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            return {type: "string"}
+        }
+    }
+
+    visitStringPointerType(ctx: StringPointerTypeContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            return {type: "*string"}
+        }
+    }
+
+    visitStringMutPointerType(ctx: StringMutPointerTypeContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            return {type: "*mut string"}
         }
     }
 

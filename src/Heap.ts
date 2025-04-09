@@ -11,6 +11,10 @@ function is_Pointer_Type(x) {
 }
 
 export class Heap {
+    string_to_number = {}
+    number_to_string = {}
+    next_string_index: number = 0;
+
     word_size = 8
     mega = 2 ** 20
     data : ArrayBuffer
@@ -30,6 +34,7 @@ export class Heap {
     Frame_tag          = 9
     Environment_tag    = 10
     Pointer_tag        = 11
+    String_tag         = 12
 
     False : number
     True : number
@@ -253,6 +258,23 @@ export class Heap {
         return {env_address : env_address, frame_index: frame_index, value_index: value_index}
 
     }
+
+    is_String = address =>
+        this.heap_get_tag(address) === this.String_tag
+
+    heap_allocate_string = n => {
+        this.string_to_number[n] = this.next_string_index
+        const string_address = this.heap_allocate(this.String_tag, 2)
+        this.heap_set_child(string_address, 0, this.next_string_index)
+        this.number_to_string[this.next_string_index++] = n
+        return string_address
+    }
+
+    get_string = address => {
+        const string_index = this.heap_get_child(address, 0)
+        return this.number_to_string[string_index]
+    }
+
     address_to_JS_value = x =>
         this.is_Boolean(x)
             ? (this.is_True(x) ? true : false)
@@ -268,7 +290,9 @@ export class Heap {
                                 ? "<closure>"
                                 : this.is_Pointer(x)
                                     ? this.get_Pointer(x)
-                                    : "unknown word tag: " + this.heap_get_tag(x)
+                                    : this.is_String(x)
+                                        ? this.get_string(x)
+                                        : "unknown word tag: " + this.heap_get_tag(x)
 
 
     JS_value_to_address = x => {
@@ -282,7 +306,9 @@ export class Heap {
                         ? this.Null
                         : (is_Pointer_Type(x))
                             ? this.heap_allocate_Pointer(x)
-                            : "unknown type: " + (typeof x)
+                            : (typeof x === "string")
+                                ? this.heap_allocate_string(x)
+                                : "unknown type: " + (typeof x)
     }
 
 }

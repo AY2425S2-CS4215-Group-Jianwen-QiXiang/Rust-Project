@@ -176,8 +176,8 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                 const rightName = (ctx.expression() as VariableContext).NAME().getText();
                 const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
                 // Only move if it's not a reference
-                if (rightVar.type !== 'int' && rightVar.type !== 'bool') {
-
+                if (rightVar.type !== 'int' && rightVar.type !== 'bool' && rightVar.type !== '*int' && rightVar.type !== '*bool'
+                && rightVar.type !== '*mut int' && rightVar.type !== '*mut bool') {
                     rightVar.dropped = true;
                 }
             }
@@ -292,8 +292,8 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             variable.borrowState.immutableBorrows++;
 
             const innerType = variable.type
-            if (innerType !== "int" && innerType !== "bool") {
-                throw new Error(`Can only create pointer for int and bool, but got ${JSON.stringify(innerType)}`)
+            if (innerType !== "int" && innerType !== "bool" && innerType !== "string") {
+                throw new Error(`Can only create pointer for int, bool, and string, but got ${JSON.stringify(innerType)}`)
             }
             return {type: '*'+innerType};
         };
@@ -319,8 +319,8 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             variable.borrowState.mutableBorrows++;
 
             const innerType = variable.type
-            if (innerType !== "int" && innerType !== "bool") {
-                throw new Error(`Can only create pointer for int and bool, but got ${JSON.stringify(innerType)}`)
+            if (innerType !== "int" && innerType !== "bool" && innerType !== "string") {
+                throw new Error(`Can only create pointer for int, bool, and string, but got ${JSON.stringify(innerType)}`)
             }
             // Check if the inner expression can be mutably borrowed
             if (innerType.startsWith('*')) {
@@ -382,7 +382,8 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                 const rightName = (ctx.expression() as VariableContext).NAME().getText();
                 const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
                 // Only move if it's not a reference
-                if (rightVar.type !== 'int' && rightVar.type !== 'bool') {
+                if (rightVar.type !== 'int' && rightVar.type !== 'bool' && rightVar.type !== '*int' && rightVar.type !== '*bool'
+                    && rightVar.type !== '*mut int' && rightVar.type !== '*mut bool') {
                     rightVar.dropped = true;
                 }
             }
@@ -428,7 +429,8 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                 const rightName = (ctx.expression() as VariableContext).NAME().getText();
                 const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
                 // Only move if it's not a reference
-                if (rightVar.type !== 'int' && rightVar.type !== 'bool') {
+                if (rightVar.type !== 'int' && rightVar.type !== 'bool' && rightVar.type !== '*int' && rightVar.type !== '*bool'
+                    && rightVar.type !== '*mut int' && rightVar.type !== '*mut bool') {
                     rightVar.dropped = true;
                 }
             }
