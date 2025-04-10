@@ -24,6 +24,7 @@ import { AddSubContext } from "./SimpleLangParser.js";
 import { ParensContext } from "./SimpleLangParser.js";
 import { LiteralsContext } from "./SimpleLangParser.js";
 import { LogicalContext } from "./SimpleLangParser.js";
+import { StringContext } from "./SimpleLangParser.js";
 import { FunctionAppContext } from "./SimpleLangParser.js";
 import { NotContext } from "./SimpleLangParser.js";
 import { ComparisonContext } from "./SimpleLangParser.js";
@@ -39,6 +40,11 @@ import { IntTypeContext } from "./SimpleLangParser.js";
 import { BoolTypeContext } from "./SimpleLangParser.js";
 import { IntPointerTypeContext } from "./SimpleLangParser.js";
 import { BoolPointerTypeContext } from "./SimpleLangParser.js";
+import { IntMutPointerTypeContext } from "./SimpleLangParser.js";
+import { BoolMutPointerTypeContext } from "./SimpleLangParser.js";
+import { StringTypeContext } from "./SimpleLangParser.js";
+import { StringPointerTypeContext } from "./SimpleLangParser.js";
+import { StringMutPointerTypeContext } from "./SimpleLangParser.js";
 import { FunctionTypeContext } from "./SimpleLangParser.js";
 import { UndefinedTypeContext } from "./SimpleLangParser.js";
 
@@ -196,6 +202,13 @@ export class SimpleLangVisitor<Result> extends AbstractParseTreeVisitor<Result> 
      */
     visitLogical?: (ctx: LogicalContext) => Result;
     /**
+     * Visit a parse tree produced by the `String`
+     * labeled alternative in `SimpleLangParser.expression`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitString?: (ctx: StringContext) => Result;
+    /**
      * Visit a parse tree produced by the `FunctionApp`
      * labeled alternative in `SimpleLangParser.expression`.
      * @param ctx the parse tree
@@ -299,6 +312,41 @@ export class SimpleLangVisitor<Result> extends AbstractParseTreeVisitor<Result> 
      * @return the visitor result
      */
     visitBoolPointerType?: (ctx: BoolPointerTypeContext) => Result;
+    /**
+     * Visit a parse tree produced by the `IntMutPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitIntMutPointerType?: (ctx: IntMutPointerTypeContext) => Result;
+    /**
+     * Visit a parse tree produced by the `BoolMutPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitBoolMutPointerType?: (ctx: BoolMutPointerTypeContext) => Result;
+    /**
+     * Visit a parse tree produced by the `StringType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitStringType?: (ctx: StringTypeContext) => Result;
+    /**
+     * Visit a parse tree produced by the `StringPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitStringPointerType?: (ctx: StringPointerTypeContext) => Result;
+    /**
+     * Visit a parse tree produced by the `StringMutPointerType`
+     * labeled alternative in `SimpleLangParser.type`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitStringMutPointerType?: (ctx: StringMutPointerTypeContext) => Result;
     /**
      * Visit a parse tree produced by the `FunctionType`
      * labeled alternative in `SimpleLangParser.type`.

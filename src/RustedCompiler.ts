@@ -4,6 +4,7 @@ import {CharStream, CommonTokenStream, AbstractParseTreeVisitor, ParseTree} from
 import { SimpleLangLexer } from './parser/src/SimpleLangLexer';
 import { SimpleLangTypeChecker} from  './SimpleLangTypeChecker'
 import {
+    StringContext,
     PtrAssignmentContext,
     EqualityContext,
     ComparisonContext,
@@ -419,6 +420,12 @@ export class RustedCompiler extends AbstractParseTreeVisitor<StringMatrixFunctio
     visitBoolean(ctx: BooleanContext) : StringMatrixFunction {
         return ce => {
             this.instruction[this.wc++] = {tag: "LDC", value: this.parseBool(ctx.BOOLEAN().getText())}
+        }
+    }
+
+    visitString(ctx: StringContext) : StringMatrixFunction {
+        return ce=> {
+            this.instruction[this.wc++] = {tag: "LDC", value: ctx.STRING().getText()}
         }
     }
 

@@ -21,11 +21,12 @@ block: '{' sequence '}';
 
 expression: NAME                                         # Variable
           | literal                                      # literals
+          | STRING                                       # String
           | '(' expression ')'                           # Parens
           | NAME '(' expression* ')'                     # FunctionApp
           | lambdaExpr                                   # Lambda
           | '&' NAME                      # Borrow
-          | '&mut' NAME                   # MutBorrow
+          | '&' 'mut' NAME                   # MutBorrow
           | '*' NAME                      # Dereference
           | '-' expression                             # Negate
           | '!' expression                             # Not
@@ -46,8 +47,13 @@ lambdaExpr: (NAME*) '=>' block;
 
 type: 'int' #IntType
     | 'bool' #BoolType
-    | '&int' #IntPointerType
-    | '&bool' #BoolPointerType
+    | '*int' #IntPointerType
+    | '*bool' #BoolPointerType
+    | '*mut int' #IntMutPointerType
+    | '*mut bool' #BoolMutPointerType
+    | 'string' #StringType
+    | '*string' #StringPointerType
+    | '*mut string' #StringMutPointerType
     | 'fn' '(' (type (',' type)*)? ')' '->' type #FunctionType
     | 'undefined'    #UndefinedType
     ;
@@ -56,5 +62,6 @@ type: 'int' #IntType
 INTEGER: [0-9]+;
 BOOLEAN: 'true' | 'false';
 NAME: [a-zA-Z]+;
+STRING: '"'[a-zA-Z0-9]*'"';
 SEPARATOR: [ \t\r\n]+ -> skip;
 

@@ -5,6 +5,12 @@ import { SimpleLangLexer } from './parser/src/SimpleLangLexer';
 import { SimpleLangReturnTypeFinder} from  './SimpleLangReturnTypeFinder'
 
 import {
+    StringContext,
+    StringTypeContext,
+    StringPointerTypeContext,
+    StringMutPointerTypeContext,
+    BoolMutPointerTypeContext,
+    IntMutPointerTypeContext,
     EqualityContext,
     ComparisonContext,
     UndefinedContext,
@@ -166,13 +172,12 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             let declared_type = ctx.type().getText()
             let name = ctx.NAME().getText()
             let actual_type = this.visit(ctx.expression())(ce)
-            console.log(`TypeChecking declaration of ${name}`)
             if (ctx.expression() instanceof VariableContext) {
                 const rightName = (ctx.expression() as VariableContext).NAME().getText();
                 const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
                 // Only move if it's not a reference
-                if (rightVar.type !== 'int' && rightVar.type !== 'bool') {
-
+                if (rightVar.type !== 'int' && rightVar.type !== 'bool' && rightVar.type !== '*int' && rightVar.type !== '*bool'
+                && rightVar.type !== '*mut int' && rightVar.type !== '*mut bool') {
                     rightVar.dropped = true;
                 }
             }
@@ -278,7 +283,6 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
         return ce => {
             const name = ctx.NAME().getText();
             const variable = this.compile_time_environment_type_look_up(ce, name);
-
             // Cannot create immutable borrow if mutable borrows exist
             if (variable.borrowState.mutableBorrows > 0) {
                 throw new Error(`Cannot borrow '${name}' as immutable because it is also borrowed as mutable`);
@@ -288,10 +292,10 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             variable.borrowState.immutableBorrows++;
 
             const innerType = variable.type
-            if (innerType !== "int" && innerType !== "bool") {
-                throw new Error(`Can only create pointer for int and bool, but got ${JSON.stringify(innerType)}`)
+            if (innerType !== "int" && innerType !== "bool" && innerType !== "string") {
+                throw new Error(`Can only create pointer for int, bool, and string, but got ${JSON.stringify(innerType)}`)
             }
-            return {type: '&'+innerType};
+            return {type: '*'+innerType};
         };
     }
 
@@ -315,14 +319,14 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             variable.borrowState.mutableBorrows++;
 
             const innerType = variable.type
-            if (innerType !== "int" && innerType !== "bool") {
-                throw new Error(`Can only create pointer for int and bool, but got ${JSON.stringify(innerType)}`)
+            if (innerType !== "int" && innerType !== "bool" && innerType !== "string") {
+                throw new Error(`Can only create pointer for int, bool, and string, but got ${JSON.stringify(innerType)}`)
             }
             // Check if the inner expression can be mutably borrowed
-            if (innerType.startsWith('&')) {
+            if (innerType.startsWith('*')) {
                 throw new Error('Cannot borrow a reference as mutable');
             }
-            return {type: '&'+innerType};
+            return {type: '*mut '+innerType};
         };
     }
 
@@ -340,12 +344,12 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             const innerType = variable.type
 
             // Check if the expression is a reference type
-            if (!innerType.startsWith('&')) {
+            if (!innerType.startsWith('*')) {
                 throw new Error(`Cannot dereference non-reference type '${innerType}'`);
             }
 
             // Extract the base type (remove the reference)
-            const baseType = innerType.replace(/^&(mut )?/, '');
+            const baseType = innerType.replace(/^\*(mut )?/, '');
 
             // Check if this is an assignment target
             const isAssignmentTarget = this.isAssignmentTarget(ctx);
@@ -378,7 +382,8 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                 const rightName = (ctx.expression() as VariableContext).NAME().getText();
                 const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
                 // Only move if it's not a reference
-                if (rightVar.type !== 'int' && rightVar.type !== 'bool') {
+                if (rightVar.type !== 'int' && rightVar.type !== 'bool' && rightVar.type !== '*int' && rightVar.type !== '*bool'
+                    && rightVar.type !== '*mut int' && rightVar.type !== '*mut bool') {
                     rightVar.dropped = true;
                 }
             }
@@ -393,18 +398,16 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             const variable = this.compile_time_environment_type_look_up(ce, name);
             const innerType = variable.type
 
-            if (!innerType.startsWith('&')) {
+            if (!innerType.startsWith('*')) {
                 throw new Error(`Cannot dereference non-reference type '${innerType}'`);
             }
 
             // Extract the base type (remove the reference)
-            const baseType = innerType.replace(/^&(mut )?/, '');
+            const baseType = innerType.replace(/^\*(mut )?/, '');
 
             // Check if this is an assignment target
-            const isAssignmentTarget = this.isAssignmentTarget(ctx);
-
             // If it's an assignment target, ensure the reference is mutable
-            if (isAssignmentTarget && !innerType.includes('mut')) {
+            if (!innerType.includes('mut')) {
                 throw new Error(`Cannot modify through an immutable reference`);
             }
 
@@ -426,7 +429,8 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                 const rightName = (ctx.expression() as VariableContext).NAME().getText();
                 const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
                 // Only move if it's not a reference
-                if (rightVar.type !== 'int' && rightVar.type !== 'bool') {
+                if (rightVar.type !== 'int' && rightVar.type !== 'bool' && rightVar.type !== '*int' && rightVar.type !== '*bool'
+                    && rightVar.type !== '*mut int' && rightVar.type !== '*mut bool') {
                     rightVar.dropped = true;
                 }
             }
@@ -598,6 +602,12 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
         }
     }
 
+    visitString(ctx: StringContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            return {type: "string"}
+        }
+    }
+
     visitUndefined(ctx: UndefinedContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
             return {type: "undefined"}
@@ -625,13 +635,43 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
 
     visitBoolPointerType(ctx: BoolPointerTypeContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "&bool"}
+            return {type: "*bool"}
+        }
+    }
+
+    visitBoolMutPointerTypeBoolPointerType(ctx: BoolMutPointerTypeContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            return {type: "*mut bool"}
+        }
+    }
+
+    visitStringType(ctx: StringTypeContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            return {type: "string"}
+        }
+    }
+
+    visitStringPointerType(ctx: StringPointerTypeContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            return {type: "*string"}
+        }
+    }
+
+    visitStringMutPointerType(ctx: StringMutPointerTypeContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            return {type: "*mut string"}
         }
     }
 
     visitIntPointerType(ctx: IntPointerTypeContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "&int"}
+            return {type: "*int"}
+        }
+    }
+
+    visitIntMutPointerType(ctx: IntMutPointerTypeContext) : CompileTimeTypeEnvironmentToType {
+        return ce => {
+            return {type: "*mut int"}
         }
     }
 

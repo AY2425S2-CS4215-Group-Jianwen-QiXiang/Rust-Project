@@ -55,7 +55,7 @@ type TypeClosure = {
         mutableBorrows: number;
         immutableBorrows: number;
     };
-    borrowFrom?: string;
+    borrowFrom?: TypeClosure;
     parameterType?: TypeObject[];
     returnType?: TypeObject;
 };
