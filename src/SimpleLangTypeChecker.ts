@@ -677,7 +677,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
 
     visitUndefinedType (ctx : UndefinedTypeContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "Undefined"}
+            return {type: "undefined"}
         }
     }
 

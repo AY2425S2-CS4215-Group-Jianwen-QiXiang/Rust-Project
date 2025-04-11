@@ -652,7 +652,7 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
 
     visitUndefinedType (ctx : UndefinedTypeContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "Undefined"}
+            return {type: "undefined"}
         }
     }
 

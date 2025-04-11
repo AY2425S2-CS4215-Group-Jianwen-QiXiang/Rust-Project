@@ -14,7 +14,7 @@ statement: expression ';'                           # ExprStmt
          | 'while' '(' expression ')' block         # WhileStmt
          | block   # BlockStmt
          | 'return' expression ';'                  #ReturnStmt
-         | 'fn' NAME '(' (NAME ':' type)* ')' '->' type block # FunctionDecl
+         | 'fn' NAME '(' (NAME ':' type (',' NAME ':' type)*)? ')' '->' type block  # FunctionDecl
          ;
 
 block: '{' sequence '}';
@@ -23,7 +23,7 @@ expression: NAME                                         # Variable
           | literal                                      # literals
           | STRING                                       # String
           | '(' expression ')'                           # Parens
-          | NAME '(' expression* ')'                     # FunctionApp
+          | NAME '(' (expression (',' expression)*)? ')' # FunctionApp
           | lambdaExpr                                   # Lambda
           | '&' NAME                      # Borrow
           | '&' 'mut' NAME                   # MutBorrow
