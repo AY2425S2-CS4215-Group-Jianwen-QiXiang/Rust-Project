@@ -6,15 +6,15 @@ prog: sequence EOF;
 sequence: statement+;
 
 statement: expression ';'                           # ExprStmt
-         | 'let' type ':' NAME '=' expression ';'      # ConstDecl
-         | 'let' 'mut' type ':' NAME '=' expression ';' # MutConstDecl
+         | 'let' NAME ':' type '=' expression ';'      # ConstDecl
+         | 'let' 'mut' NAME ':' type '=' expression ';' # MutConstDecl
          | NAME '=' expression ';'                     # Assignment
          | '*'NAME '=' expression ';'                  # PtrAssignment
          | 'if' '(' expression ')' block 'else' block # IfStmt
          | 'while' '(' expression ')' block         # WhileStmt
          | block   # BlockStmt
          | 'return' expression ';'                  #ReturnStmt
-         | 'fn' NAME '(' (type ':' NAME)* ')' '->' type block # FunctionDecl
+         | 'fn' NAME '(' (NAME ':' type)* ')' '->' type block # FunctionDecl
          ;
 
 block: '{' sequence '}';
