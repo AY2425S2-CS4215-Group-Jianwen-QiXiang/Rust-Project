@@ -365,9 +365,16 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             const variable = this.compile_time_environment_type_look_up(ce, name);
             const innerType = variable.type
 
+
             // Check if the expression is a reference type
             if (!innerType.startsWith('*')) {
                 throw new Error(`Cannot dereference non-reference type '${innerType}'`);
+            }
+
+            if (variable.borrowFrom) {
+                if (variable.borrowFrom.dropped) {
+                    throw new Error(`The pointer ${name} is invalid as it is pointing to a dropped variable`)
+                }
             }
 
             // Extract the base type (remove the reference)
@@ -428,12 +435,16 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             const variable = this.compile_time_environment_type_look_up(ce, name);
             const innerType = variable.type
 
+
+
             if (!innerType.startsWith('*')) {
                 throw new Error(`Cannot dereference non-reference type '${innerType}'`);
             }
 
-            if (variable.borrowFrom.dropped) {
-                throw new Error(`The pointer ${name} is invalid as it is pointing to a dropped variable`);
+            if (variable.borrowFrom) {
+                if (variable.borrowFrom.dropped) {
+                    throw new Error(`The pointer ${name} is invalid as it is pointing to a dropped variable`)
+                }
             }
 
             // Extract the base type (remove the reference)

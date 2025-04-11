@@ -377,6 +377,12 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
                 throw new Error(`Cannot dereference non-reference type '${innerType}'`);
             }
 
+            if (variable.borrowFrom) {
+                if (variable.borrowFrom.dropped) {
+                    throw new Error(`The pointer ${name} is invalid as it is pointing to a dropped variable`)
+                }
+            }
+
             // Extract the base type (remove the reference)
             const baseType = innerType.replace(/^\*(mut )?/, '');
 
@@ -434,6 +440,12 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
 
             if (!innerType.startsWith('*')) {
                 throw new Error(`Cannot dereference non-reference type '${innerType}'`);
+            }
+
+            if (variable.borrowFrom) {
+                if (variable.borrowFrom.dropped) {
+                    throw new Error(`The pointer ${name} is invalid as it is pointing to a dropped variable`)
+                }
             }
 
             // Extract the base type (remove the reference)
