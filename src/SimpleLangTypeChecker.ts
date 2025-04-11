@@ -62,6 +62,7 @@ type TypeClosure = {
     name: string;
     type: string;
     dropped : boolean;
+    moved : boolean;
     mutable : boolean;
     borrowState: {
         mutableBorrows: number;
@@ -106,10 +107,10 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
     scan_statement(ctx : StatementContext, ce : TypeClosure[][]) : TypeClosure[] {
         if (ctx instanceof ConstDeclContext) {
             return [{name : ctx.NAME().getText(), type: ctx.type().getText(),
-                dropped: false, mutable: false, borrowState:{mutableBorrows:0, immutableBorrows:0}}];
+                dropped: false, mutable: false, borrowState:{mutableBorrows:0, immutableBorrows:0}, moved:false}];
         } else if (ctx instanceof MutConstDeclContext) {
             return [{name : ctx.NAME().getText(), type: ctx.type().getText(),
-                dropped: false, mutable: true, borrowState:{mutableBorrows:0, immutableBorrows:0}}];
+                dropped: false, mutable: true, borrowState:{mutableBorrows:0, immutableBorrows:0}, moved:false}];
         } else if (ctx instanceof FunctionDeclContext) {
             let parameterTypes: TypeObject[] = []
             let returnType: TypeObject
@@ -120,7 +121,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             returnType = this.visit(types[types.length - 1])(ce)
             return [{name : ctx.NAME()[0].getText(), type: "function", dropped:false,
                 mutable: false, parameterType: parameterTypes, returnType: returnType,
-                borrowState:{mutableBorrows:0, immutableBorrows:0}}]
+                borrowState:{mutableBorrows:0, immutableBorrows:0}, moved:false}];
         } else {
             return []
         }
@@ -172,16 +173,22 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             let declared_type = ctx.type().getText()
             let name = ctx.NAME().getText()
             let actual_type = this.visit(ctx.expression())(ce)
-            if (ctx.expression() instanceof VariableContext) {
-                const rightName = (ctx.expression() as VariableContext).NAME().getText();
-                const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
-                // Only move if it's not a reference
-                if (rightVar.type !== 'int' && rightVar.type !== 'bool' && rightVar.type !== '*int' && rightVar.type !== '*bool'
-                && rightVar.type !== '*mut int' && rightVar.type !== '*mut bool') {
-                    rightVar.dropped = true;
-                }
-            }
             if (declared_type == actual_type.type) {
+                if (ctx.expression() instanceof VariableContext) {
+                    const rightName = (ctx.expression() as VariableContext).NAME().getText();
+                    const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
+                    // Only move if it's not a reference
+                    if (rightVar.type !== 'int' && rightVar.type !== 'bool' && rightVar.type !== '*int' && rightVar.type !== '*bool'
+                        && rightVar.type !== '*mut int' && rightVar.type !== '*mut bool') {
+                        if (rightVar.borrowState.mutableBorrows > 0 || rightVar.borrowState.immutableBorrows > 0) {
+                            throw new Error(`Cannot move ${rightVar.name} as it is being borrowed`);
+                        }
+                        rightVar.moved = true;
+                    }
+                } else if (ctx.expression() instanceof BorrowContext || ctx.expression() instanceof MutBorrowContext) {
+                    this.compile_time_environment_type_look_up(ce, name).borrowFrom =
+                        this.compile_time_environment_type_look_up(ce, (ctx.expression() as BorrowContext).NAME().getText())
+                }
                 return actual_type
             } else {
                 throw new Error(`Expected type ${declared_type}, actual type ${actual_type.type}`)
@@ -235,7 +242,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             for (let i = 1; i < allNames.length; i++) {
                 parameterName[i - 1] = {name:allNames[i].getText(), type: declaredParameterTypes[i - 1].type, dropped: false,
                     mutable:false, parameterType:declaredParameterTypes[i - 1].parameterType,
-                    returnType: declaredParameterTypes[i - 1].returnType, borrowState:{mutableBorrows:0, immutableBorrows:0}}
+                    returnType: declaredParameterTypes[i - 1].returnType, borrowState:{mutableBorrows:0, immutableBorrows:0}, moved: false}
             }
             let e = this.compile_time_environment_extend(parameterName, ce)
             let actualReturnType = this.returnTypeFinder.visit(ctx.block())(e)
@@ -283,6 +290,13 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
         return ce => {
             const name = ctx.NAME().getText();
             const variable = this.compile_time_environment_type_look_up(ce, name);
+            if (variable.dropped) {
+                throw new Error(`Cannot borrow ${name} as it is dropped`)
+            }
+            if (variable.moved) {
+                throw new Error(`Cannot borrow ${name} as it is moved`)
+            }
+
             // Cannot create immutable borrow if mutable borrows exist
             if (variable.borrowState.mutableBorrows > 0) {
                 throw new Error(`Cannot borrow '${name}' as immutable because it is also borrowed as mutable`);
@@ -303,6 +317,14 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
         return ce => {
             const name = ctx.NAME().getText();
             const variable = this.compile_time_environment_type_look_up(ce, name);
+
+            if (variable.dropped) {
+                throw new Error(`Cannot borrow ${name} as it is dropped`)
+            }
+            if (variable.moved) {
+                throw new Error(`Cannot borrow ${name} as it is moved`)
+            }
+
             if (!variable.mutable) {
                 throw new Error(`Cannot mutably borrow immutable variable '${name}'`);
             }
@@ -377,6 +399,8 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                 throw new Error(`Type mismatch: expected '${variable.type}', found '${rightType.type}'`);
             }
 
+            variable.moved = false
+
             // If the right side is a variable, mark it as moved
             if (ctx.expression() instanceof VariableContext) {
                 const rightName = (ctx.expression() as VariableContext).NAME().getText();
@@ -384,8 +408,14 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                 // Only move if it's not a reference
                 if (rightVar.type !== 'int' && rightVar.type !== 'bool' && rightVar.type !== '*int' && rightVar.type !== '*bool'
                     && rightVar.type !== '*mut int' && rightVar.type !== '*mut bool') {
-                    rightVar.dropped = true;
+                    if (rightVar.borrowState.mutableBorrows > 0 || rightVar.borrowState.immutableBorrows > 0) {
+                        throw new Error(`Cannot move ${rightVar.name} as it is being borrowed`);
+                    }
+                    rightVar.moved = true;
                 }
+            } else if (ctx.expression() instanceof BorrowContext || ctx.expression() instanceof MutBorrowContext) {
+                this.compile_time_environment_type_look_up(ce, name).borrowFrom =
+                    this.compile_time_environment_type_look_up(ce, (ctx.expression() as BorrowContext).NAME().getText())
             }
 
             return {type: variable.type, parameterType: variable.parameterType, returnType: variable.returnType};
@@ -400,6 +430,10 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
 
             if (!innerType.startsWith('*')) {
                 throw new Error(`Cannot dereference non-reference type '${innerType}'`);
+            }
+
+            if (variable.borrowFrom.dropped) {
+                throw new Error(`The pointer ${name} is invalid as it is pointing to a dropped variable`);
             }
 
             // Extract the base type (remove the reference)
@@ -425,16 +459,22 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             let declared_type = ctx.type().getText()
             let name = ctx.NAME().getText()
             let actual_type = this.visit(ctx.expression())(ce)
-            if (ctx.expression() instanceof VariableContext) {
-                const rightName = (ctx.expression() as VariableContext).NAME().getText();
-                const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
-                // Only move if it's not a reference
-                if (rightVar.type !== 'int' && rightVar.type !== 'bool' && rightVar.type !== '*int' && rightVar.type !== '*bool'
-                    && rightVar.type !== '*mut int' && rightVar.type !== '*mut bool') {
-                    rightVar.dropped = true;
-                }
-            }
             if (declared_type == actual_type.type) {
+                if (ctx.expression() instanceof VariableContext) {
+                    const rightName = (ctx.expression() as VariableContext).NAME().getText();
+                    const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
+                    // Only move if it's not a reference
+                    if (rightVar.type !== 'int' && rightVar.type !== 'bool' && rightVar.type !== '*int' && rightVar.type !== '*bool'
+                        && rightVar.type !== '*mut int' && rightVar.type !== '*mut bool') {
+                        if (rightVar.borrowState.mutableBorrows > 0 || rightVar.borrowState.immutableBorrows > 0) {
+                            throw new Error(`Cannot move ${rightVar.name} as it is being borrowed`);
+                        }
+                        rightVar.moved = true;
+                    }
+                } else if (ctx.expression() instanceof BorrowContext || ctx.expression() instanceof MutBorrowContext) {
+                    this.compile_time_environment_type_look_up(ce, name).borrowFrom =
+                        this.compile_time_environment_type_look_up(ce, (ctx.expression() as BorrowContext).NAME().getText())
+                }
                 return actual_type
             } else {
                 throw new Error(`Expected type ${declared_type}, actual type ${actual_type.type}`)
@@ -465,6 +505,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                         borrowedVariable.borrowState.immutableBorrows--;
                     }
                 }
+                v.dropped = true;
             }
             return result
         }
@@ -488,6 +529,10 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
 
             if (lookupResult.dropped) {
                 throw new Error(`reference to name ${name} has been dropped`)
+            }
+
+            if (lookupResult.moved) {
+                throw new Error(`reference to name ${name} has been moved`)
             }
 
             if (lookupResult.borrowState.mutableBorrows > 0) {

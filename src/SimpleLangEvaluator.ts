@@ -50,6 +50,7 @@ type TypeClosure = {
     name: string;
     type: string;
     dropped : boolean;
+    moved : boolean;
     mutable : boolean;
     borrowState: {
         mutableBorrows: number;
