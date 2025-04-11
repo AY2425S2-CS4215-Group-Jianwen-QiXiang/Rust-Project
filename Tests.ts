@@ -89,6 +89,31 @@ console.log("Test 14")
 console.log((new Evaluator()).evaluate("let mut z : int = 10; let mut x : *mut int = &mut z;" +
     "let y : *int = &z;"))
 console.log("\n")
+console.log("Test 14.1")
+console.log((new Evaluator()).evaluate("let mut z : int = 10; let mut x : *mut int = &mut z;" +
+    "let y : *mut int = x; z;"))
+console.log("\n")
+console.log("Test 14.2")
+console.log((new Evaluator()).evaluate("let mut z : int = 10; let mut x : *mut int = &mut z;" +
+    "let y : *mut int = x; *x;"))
+console.log("\n")
+console.log("Test 14.2")
+console.log((new Evaluator()).evaluate("let mut z : int = 10; let mut x : *mut int = &mut z;" +
+    "{let y : *mut int = x;} x = &mut z; *x;"))
+console.log("\n")
+console.log("Test 14.3")
+console.log((new Evaluator()).evaluate("let mut z : int = 10; let mut x : *mut int = &mut z;" +
+    "{let y : *mut int = x;} let a : *int = &z; *a;"))
+console.log("\n")
+console.log("Test 14.4")
+console.log((new Evaluator()).evaluate("let mut z : int = 10;" +
+    "{let mut x : *int = &z; let y : *int = x; let a : *int = x; let b : *int = x; let c : *int = x;} let d : *mut int = &mut z; *d;"))
+console.log("\n")
+console.log("Test 14.5")
+console.log((new Evaluator()).evaluate("let mut z : int = 10;" +
+    "{let mut x : *int = &z; let y : *int = x; let a : *int = x; let b : *int = x; let c : *int = x;} let d : *mut int = &mut z; " +
+    "let e : *int = &z;"))
+console.log("\n")
 console.log("Test 15")
 console.log((new Evaluator()).evaluate("let x : string = \"1\"; let y : string = x; x;"))
 console.log("\n")

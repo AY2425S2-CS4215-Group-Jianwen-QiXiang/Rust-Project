@@ -45,6 +45,7 @@ import {
     EqualityContext,
     BoolPointerTypeContext, BoolMutPointerTypeContext, IntPointerTypeContext, IntMutPointerTypeContext
 } from "./parser/src/SimpleLangParser";
+import {Evaluator} from "./SimpleLangEvaluator";
 
 type TypeObject = {
     type: string;
@@ -186,12 +187,16 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
                     const rightName = (ctx.expression() as VariableContext).NAME().getText();
                     const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
                     // Only move if it's not a reference
-                    if (rightVar.type !== 'int' && rightVar.type !== 'bool' && rightVar.type !== '*int' && rightVar.type !== '*bool'
-                        && rightVar.type !== '*mut int' && rightVar.type !== '*mut bool') {
+                    if (rightVar.type !== 'int' && rightVar.type !== 'bool' && rightVar.type !== '*int' && rightVar.type !== '*bool') {
                         if (rightVar.borrowState.mutableBorrows > 0 || rightVar.borrowState.immutableBorrows > 0) {
                             throw new Error(`Cannot move ${rightVar.name} as it is being borrowed`);
                         }
                         rightVar.moved = true;
+                    } if (rightVar.type.startsWith("*")) {
+                        this.compile_time_environment_type_look_up(ce, name).borrowFrom = rightVar.borrowFrom;
+                        if (!rightVar.type.includes("mut")) {
+                            rightVar.borrowFrom.borrowState.immutableBorrows += 1;
+                        }
                     }
                 } else if (ctx.expression() instanceof BorrowContext || ctx.expression() instanceof MutBorrowContext) {
                     this.compile_time_environment_type_look_up(ce, name).borrowFrom =
@@ -393,6 +398,10 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
                 }
             }
 
+            if (variable.moved) {
+                throw new Error(`The pointer ${name} is moved`)
+            }
+
             // Extract the base type (remove the reference)
             const baseType = innerType.replace(/^\*(mut )?/, '');
 
@@ -427,12 +436,16 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
                 const rightName = (ctx.expression() as VariableContext).NAME().getText();
                 const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
                 // Only move if it's not a reference
-                if (rightVar.type !== 'int' && rightVar.type !== 'bool' && rightVar.type !== '*int' && rightVar.type !== '*bool'
-                    && rightVar.type !== '*mut int' && rightVar.type !== '*mut bool') {
+                if (rightVar.type !== 'int' && rightVar.type !== 'bool' && rightVar.type !== '*int' && rightVar.type !== '*bool') {
                     if (rightVar.borrowState.mutableBorrows > 0 || rightVar.borrowState.immutableBorrows > 0) {
                         throw new Error(`Cannot move ${rightVar.name} as it is being borrowed`);
                     }
                     rightVar.moved = true;
+                } if (rightVar.type.startsWith("*")) {
+                    this.compile_time_environment_type_look_up(ce, name).borrowFrom = rightVar.borrowFrom;
+                    if (!rightVar.type.includes("mut")) {
+                        rightVar.borrowFrom.borrowState.immutableBorrows += 1;
+                    }
                 }
             } else if (ctx.expression() instanceof BorrowContext || ctx.expression() instanceof MutBorrowContext) {
                 this.compile_time_environment_type_look_up(ce, name).borrowFrom =
@@ -456,6 +469,10 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
                 if (variable.borrowFrom.dropped) {
                     throw new Error(`The pointer ${name} is invalid as it is pointing to a dropped variable`)
                 }
+            }
+
+            if (variable.moved) {
+                throw new Error(`The pointer ${name} is moved`)
             }
 
             // Extract the base type (remove the reference)
@@ -485,9 +502,13 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
                     const rightName = (ctx.expression() as VariableContext).NAME().getText();
                     const rightVar = this.compile_time_environment_type_look_up(ce, rightName);
                     // Only move if it's not a reference
-                    if (rightVar.type !== 'int' && rightVar.type !== 'bool' && rightVar.type !== '*int' && rightVar.type !== '*bool'
-                        && rightVar.type !== '*mut int' && rightVar.type !== '*mut bool') {
+                    if (rightVar.type !== 'int' && rightVar.type !== 'bool' && rightVar.type !== '*int' && rightVar.type !== '*bool') {
                         rightVar.moved = true;
+                    } if (rightVar.type.startsWith("*")) {
+                        this.compile_time_environment_type_look_up(ce, name).borrowFrom = rightVar.borrowFrom;
+                        if (!rightVar.type.includes("mut")) {
+                            rightVar.borrowFrom.borrowState.immutableBorrows += 1;
+                        }
                     }
                 } else if (ctx.expression() instanceof BorrowContext || ctx.expression() instanceof MutBorrowContext) {
                     this.compile_time_environment_type_look_up(ce, name).borrowFrom =
