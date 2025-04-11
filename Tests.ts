@@ -118,5 +118,8 @@ console.log((new Evaluator()).evaluate("let mut x : string = \"1\"; let mut z : 
 console.log("\n")
 console.log("Test 15.7")
 console.log((new Evaluator()).evaluate("let mut x : string = \"1\"; let mut z : *string = &x; {let y : string = \"2\"; z = &y;}  z = &x; *z;"))
+console.log("\n")
+console.log("Test 16")
+console.log((new Evaluator()).evaluate("let x : int = 1; let x : int = 2;"))
 //console.log((new Evaluator()).evaluate("let int: a = 10; let &int: b = &a; let &int : c = b; b;"))
 //console.log((new Evaluator()).typeCheck("let mut int: z = 10;"))

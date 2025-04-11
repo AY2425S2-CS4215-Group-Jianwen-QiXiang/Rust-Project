@@ -129,8 +129,18 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
 
 
     scan_sequence(ctx : SequenceContext, ce) : TypeClosure[] {
-        return ctx.statement().reduce((acc, x) => acc.concat(this.scan_statement(x, ce)),
-            [])
+        const names = {}
+        const result: TypeClosure[] = ctx.statement().reduce((acc, x) => acc.concat(this.scan_statement(x, ce)),
+            ([] as TypeClosure[]))
+        for (let i = 0; i < result.length; i++) {
+            const closure = result[i]
+            if (names[closure.name] === undefined) {
+                names[closure.name] = true
+            } else {
+                throw new Error(`Repeated declaration of name ${closure.name}`)
+            }
+        }
+        return result
     }
 
     visitProg(ctx: ProgContext): CompileTimeTypeEnvironmentToType {
