@@ -259,7 +259,14 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                     returnType: declaredParameterTypes[i - 1].returnType, borrowState:{mutableBorrows:0, immutableBorrows:0}, moved: false}
             }
             let e = this.compile_time_environment_extend(parameterName, ce)
-            let actualReturnType = this.returnTypeFinder.visit(ctx.block())(e)
+            let ReturnObject = this.returnTypeFinder.visit(ctx.block())(e)
+            let actualReturnType: TypeObject = {type: ""}
+            if (ReturnObject.type == "return") {
+                actualReturnType.type = ReturnObject.returnType.type
+            } else {
+                actualReturnType.type = "undefined"
+            }
+
 
             if (this.deepEqual(actualReturnType, declaredReturnType)) {
                 return { type : "function", parameterTypes : declaredParameterTypes, returnTypes : declaredReturnType }
