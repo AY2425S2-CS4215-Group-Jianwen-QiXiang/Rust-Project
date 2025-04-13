@@ -502,8 +502,8 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                         let recheckedReturnType = this.returnTypeFinder.visit(functionType.block)(functionCallEnv);
                         
                         // Ensure the return type is still valid
-                        if (!this.deepEqual(recheckedReturnType, functionType.returnType)) {
-                            throw new Error(`Function body no longer type checks. Expected return type ${JSON.stringify(functionType.returnType)}, but got ${JSON.stringify(recheckedReturnType)}`);
+                        if (!this.deepEqual(recheckedReturnType.returnType, functionType.returnType)) {
+                            throw new Error(`Expected return type ${JSON.stringify(functionType.returnType)}, but got ${JSON.stringify(recheckedReturnType.returnType)}`);
                         }
                     }
                     
