@@ -2,7 +2,7 @@ import { BasicEvaluator } from "conductor/dist/conductor/runner";
 import { IRunnerPlugin } from "conductor/dist/conductor/runner/types";
 import { CharStream, CommonTokenStream, AbstractParseTreeVisitor } from 'antlr4ng';
 import { SimpleLangLexer } from './parser/src/SimpleLangLexer';
-import { SimpleLangReturnTypeFinder} from  './SimpleLangReturnTypeFinder'
+import { SimpleLangReturnTypeFinder } from './SimpleLangReturnTypeFinder'
 
 import {
     StringContext,
@@ -50,7 +50,8 @@ import {
     SimpleLangParser, IntTypeContext, BoolTypeContext, FunctionTypeContext, PtrAssignmentContext,
 } from './parser/src/SimpleLangParser';
 import { SimpleLangVisitor } from './parser/src/SimpleLangVisitor';
-import {type} from "node:os";
+import * as util from 'util';
+import { type } from "node:os";
 
 type TypeObject = {
     type: string;
@@ -61,9 +62,9 @@ type TypeObject = {
 type TypeClosure = {
     name: string;
     type: string;
-    dropped : boolean;
-    moved : boolean;
-    mutable : boolean;
+    dropped: boolean;
+    moved: boolean;
+    mutable: boolean;
     borrowState: {
         mutableBorrows: number;
         immutableBorrows: number;
@@ -71,6 +72,8 @@ type TypeClosure = {
     borrowFrom?: TypeClosure;
     parameterType?: TypeObject[];
     returnType?: TypeObject;
+    paramNames?: string[];
+    block?: BlockContext; // Store the function body for re-checking
 };
 
 
@@ -81,19 +84,19 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
 
     returnTypeFinder = new SimpleLangReturnTypeFinder();
 
-    my_push (array, ...items) {
+    my_push(array, ...items) {
         for (let item of items) {
             array.push(item)
         }
         return array
     }
 
-    compile_time_environment_extend (vs: TypeClosure[], e: TypeClosure[][]): TypeClosure[][] {
+    compile_time_environment_extend(vs: TypeClosure[], e: TypeClosure[][]): TypeClosure[][] {
         //  make shallow copy of e
         return this.my_push([...e], vs)
     }
 
-    compile_time_environment_type_look_up (env: TypeClosure[][], x:string) : TypeClosure {
+    compile_time_environment_type_look_up(env: TypeClosure[][], x: string): TypeClosure {
         for (let i = env.length - 1; i >= 0; i--) {
             for (let j = 0; j < Object.keys(env[i]).length; j++) {
                 if (env[i][j].name == x) {
@@ -104,13 +107,17 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
         throw new Error(`Unbounded name: ${x}`)
     }
 
-    scan_statement(ctx : StatementContext, ce : TypeClosure[][]) : TypeClosure[] {
+    scan_statement(ctx: StatementContext, ce: TypeClosure[][]): TypeClosure[] {
         if (ctx instanceof ConstDeclContext) {
-            return [{name : ctx.NAME().getText(), type: ctx.type().getText(),
-                dropped: false, mutable: false, borrowState:{mutableBorrows:0, immutableBorrows:0}, moved:false}];
+            return [{
+                name: ctx.NAME().getText(), type: ctx.type().getText(),
+                dropped: false, mutable: false, borrowState: { mutableBorrows: 0, immutableBorrows: 0 }, moved: false
+            }];
         } else if (ctx instanceof MutConstDeclContext) {
-            return [{name : ctx.NAME().getText(), type: ctx.type().getText(),
-                dropped: false, mutable: true, borrowState:{mutableBorrows:0, immutableBorrows:0}, moved:false}];
+            return [{
+                name: ctx.NAME().getText(), type: ctx.type().getText(),
+                dropped: false, mutable: true, borrowState: { mutableBorrows: 0, immutableBorrows: 0 }, moved: false
+            }];
         } else if (ctx instanceof FunctionDeclContext) {
             let parameterTypes: TypeObject[] = []
             let returnType: TypeObject
@@ -119,16 +126,18 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                 parameterTypes[i] = this.visit(types[i])(ce)
             }
             returnType = this.visit(types[types.length - 1])(ce)
-            return [{name : ctx.NAME()[0].getText(), type: "function", dropped:false,
+            return [{
+                name: ctx.NAME()[0].getText(), type: "function", dropped: false,
                 mutable: false, parameterType: parameterTypes, returnType: returnType,
-                borrowState:{mutableBorrows:0, immutableBorrows:0}, moved:false}];
+                borrowState: { mutableBorrows: 0, immutableBorrows: 0 }, moved: false
+            }];
         } else {
             return []
         }
     }
 
 
-    scan_sequence(ctx : SequenceContext, ce) : TypeClosure[] {
+    scan_sequence(ctx: SequenceContext, ce): TypeClosure[] {
         const names = {}
         const result: TypeClosure[] = ctx.statement().reduce((acc, x) => acc.concat(this.scan_statement(x, ce)),
             ([] as TypeClosure[]))
@@ -152,13 +161,13 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
 
     }
 
-    visitSequence(ctx: SequenceContext) : CompileTimeTypeEnvironmentToType {
+    visitSequence(ctx: SequenceContext): CompileTimeTypeEnvironmentToType {
         return ce => {
             let statements = ctx.statement()
             if (statements.length == 0) {
-                return {type : "undefined"}
+                return { type: "undefined" }
             } else {
-                let result: TypeObject = {type : "undefined"}
+                let result: TypeObject = { type: "undefined" }
                 for (let statement of statements) {
                     result = this.visit(statement)(ce)
                 }
@@ -168,17 +177,17 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
         }
     }
 
-    visitExprStmt(ctx: ExprStmtContext) : CompileTimeTypeEnvironmentToType {
+    visitExprStmt(ctx: ExprStmtContext): CompileTimeTypeEnvironmentToType {
         return this.visit(ctx.expression())
     }
 
-    visitReturnStmt(ctx: ReturnStmtContext) : CompileTimeTypeEnvironmentToType {
+    visitReturnStmt(ctx: ReturnStmtContext): CompileTimeTypeEnvironmentToType {
         return ce => {
             throw new Error("Return statements outside function")
         }
     }
 
-    visitConstDecl(ctx: ConstDeclContext) : CompileTimeTypeEnvironmentToType {
+    visitConstDecl(ctx: ConstDeclContext): CompileTimeTypeEnvironmentToType {
         return ce => {
             let declared_type = ctx.type().getText()
             let name = ctx.NAME().getText()
@@ -210,7 +219,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
         }
     }
 
-    visitIfStmt(ctx: IfStmtContext) : CompileTimeTypeEnvironmentToType {
+    visitIfStmt(ctx: IfStmtContext): CompileTimeTypeEnvironmentToType {
         return ce => {
             let predicate_type = this.visit(ctx.expression())(ce)
             if (predicate_type.type !== "bool") {
@@ -226,75 +235,288 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
 
     }
 
-    visitWhileStmt(ctx: WhileStmtContext) : CompileTimeTypeEnvironmentToType {
+    visitWhileStmt(ctx: WhileStmtContext): CompileTimeTypeEnvironmentToType {
         return ce => {
             let predicate_type = this.visit(ctx.expression())(ce)
             if (predicate_type.type !== "bool") {
                 throw new Error(`Expect boolean type at predicate, but got ${predicate_type.type}`)
             }
             this.visit(ctx.block())(ce)
-            return {type : "undefined"}
+            return { type: "undefined" }
         }
 
     }
 
-    visitBlockStmt(ctx: BlockStmtContext) : CompileTimeTypeEnvironmentToType {
+    visitBlockStmt(ctx: BlockStmtContext): CompileTimeTypeEnvironmentToType {
         return this.visit(ctx.block())
     }
 
-    visitFunctionDecl(ctx: FunctionDeclContext) : CompileTimeTypeEnvironmentToType {
-        return ce => {
-            let declaredParameterTypes: TypeObject[] = []
-            let declaredReturnType: TypeObject
-            let types = ctx.type_()
-            for (let i = 0; i < types.length - 1; i++) {
-                declaredParameterTypes[i] = this.visit(types[i])(ce)
-            }
-            declaredReturnType = this.visit(types[types.length - 1])(ce)
-            let allNames = ctx.NAME()
-            let parameterName: TypeClosure[] = []
-            for (let i = 1; i < allNames.length; i++) {
-                parameterName[i - 1] = {name:allNames[i].getText(), type: declaredParameterTypes[i - 1].type, dropped: false,
-                    mutable:false, parameterType:declaredParameterTypes[i - 1].parameterType,
-                    returnType: declaredParameterTypes[i - 1].returnType, borrowState:{mutableBorrows:0, immutableBorrows:0}, moved: false}
-            }
-            let e = this.compile_time_environment_extend(parameterName, ce)
-            let actualReturnType = this.returnTypeFinder.visit(ctx.block())(e)
+    // visitFunctionDecl(ctx: FunctionDeclContext) : CompileTimeTypeEnvironmentToType {
+    //     return ce => {
+    //         let declaredParameterTypes: TypeObject[] = []
+    //         let declaredReturnType: TypeObject
+    //         let types = ctx.type_()
+    //         for (let i = 0; i < types.length - 1; i++) {
+    //             declaredParameterTypes[i] = this.visit(types[i])(ce)
+    //         }
+    //         declaredReturnType = this.visit(types[types.length - 1])(ce)
+    //         let allNames = ctx.NAME()
+    //         let parameterName: TypeClosure[] = []
+    //         for (let i = 1; i < allNames.length; i++) {
+    //             parameterName[i - 1] = {name:allNames[i].getText(), type: declaredParameterTypes[i - 1].type, dropped: false,
+    //                 mutable:false, parameterType:declaredParameterTypes[i - 1].parameterType,
+    //                 returnType: declaredParameterTypes[i - 1].returnType, borrowState:{mutableBorrows:0, immutableBorrows:0}, moved: false}
+    //         }
+    //         let e = this.compile_time_environment_extend(parameterName, ce)
+    //         let actualReturnType = this.returnTypeFinder.visit(ctx.block())(e)
 
-            if (this.deepEqual(actualReturnType, declaredReturnType)) {
-                return { type : "function", parameterTypes : declaredParameterTypes, returnTypes : declaredReturnType }
-            } else {
-                throw new Error(`Mismatch in return type, expected : ${JSON.stringify(declaredReturnType)},
-                 but got ${JSON.stringify(actualReturnType)}`)
+    //         if (this.deepEqual(actualReturnType, declaredReturnType)) {
+    //             return { type : "function", parameterTypes : declaredParameterTypes, returnTypes : declaredReturnType }
+    //         } else {
+    //             throw new Error(`Mismatch in return type, expected : ${JSON.stringify(declaredReturnType)},
+    //              but got ${JSON.stringify(actualReturnType)}`)
+    //         }
+    //     }
+    // }
+    // visitFunctionDecl(ctx: FunctionDeclContext): CompileTimeTypeEnvironmentToType {
+    //     return ce => {
+    //         let declaredParameterTypes: TypeObject[] = []
+    //         let declaredReturnType: TypeObject
+    //         let types = ctx.type_()
+    //         for (let i = 0; i < types.length - 1; i++) {
+    //             declaredParameterTypes[i] = this.visit(types[i])(ce)
+    //         }
+    //         declaredReturnType = this.visit(types[types.length - 1])(ce)
+    //         let allNames = ctx.NAME()
+    //         let parameterName: TypeClosure[] = []
+    //         for (let i = 1; i < allNames.length; i++) {
+    //             parameterName[i - 1] = {name:allNames[i].getText(), type: declaredParameterTypes[i - 1].type, dropped: false,
+    //                 mutable:false, parameterType:declaredParameterTypes[i - 1].parameterType,
+    //                 returnType: declaredParameterTypes[i - 1].returnType, borrowState:{mutableBorrows:0, immutableBorrows:0}, moved: false}
+    //         }
+    //         let e = this.compile_time_environment_extend(parameterName, ce)
+    //         let actualReturnType = this.returnTypeFinder.visit(ctx.block())(e)
+    
+    //         if (this.deepEqual(actualReturnType, declaredReturnType)) {
+    //             // Store the function body and parameter names
+    //             const functionName = ctx.NAME()[0].getText();
+    //             const functionClosure = this.compile_time_environment_type_look_up(ce, functionName);
+    //             functionClosure.block = ctx.block();
+                
+    //             // Store parameter names for later use
+    //             functionClosure.paramNames = [];
+    //             for (let i = 1; i < allNames.length; i++) {
+    //                 functionClosure.paramNames.push(allNames[i].getText());
+    //             }
+                
+    //             return { type: "function", parameterTypes: declaredParameterTypes, returnTypes: declaredReturnType }
+    //         } else {
+    //             throw new Error(`Mismatch in return type, expected: ${JSON.stringify(declaredReturnType)}, but got ${JSON.stringify(actualReturnType)}`)
+    //         }
+    //     }
+    // }
+    visitFunctionDecl(ctx: FunctionDeclContext): CompileTimeTypeEnvironmentToType {
+        return ce => {
+            let declaredParameterTypes: TypeObject[] = [];
+            let declaredReturnType: TypeObject;
+            let types = ctx.type_();
+            
+            // Parse parameter types
+            for (let i = 0; i < types.length - 1; i++) {
+                declaredParameterTypes[i] = this.visit(types[i])(ce);
             }
+            
+            // Parse return type
+            declaredReturnType = this.visit(types[types.length - 1])(ce);
+            
+            // Store function information in the type closure
+            const functionName = ctx.NAME()[0].getText();
+            const functionClosure = this.compile_time_environment_type_look_up(ce, functionName);
+            
+            // Store the function body
+            functionClosure.block = ctx.block();
+            
+            // Store parameter names
+            functionClosure.paramNames = [];
+            for (let i = 1; i < ctx.NAME().length; i++) {
+                functionClosure.paramNames.push(ctx.NAME()[i].getText());
+            }
+            
+            // Return function type
+            return { 
+                type: "function", 
+                parameterType: declaredParameterTypes, 
+                returnType: declaredReturnType 
+            };
         }
     }
+    // visitFunctionApp(ctx: FunctionAppContext) : CompileTimeTypeEnvironmentToType {
+    //     return ce => {
+    //         let functionName= ctx.NAME().getText()
+    //         let functionType = this.compile_time_environment_type_look_up(ce, functionName)
+    //         if (functionType.type !== "function") {
+    //             throw new Error(`Call to non-function object : ${functionName} type : ${JSON.stringify(functionType)}`)
+    //         } else {
+    //             let expectedParameterTypes = functionType.parameterType
+    //             let actualParameters = ctx.expression()
+    //             if (actualParameters.length !== expectedParameterTypes.length) {
+    //                 throw new Error(`Incorrect number of argument. Expect ${expectedParameterTypes.length},
+    //                  but got ${actualParameters.length}`)
+    //             } else {
+    //                 for (let i = 0; i < expectedParameterTypes.length; i++) {
+    //                     let expectedParameterType: TypeObject = expectedParameterTypes[i]
+    //                     let actualParameterType = this.visit(actualParameters[i])(ce)
+    //                     if (actualParameters[i] instanceof VariableContext) {}
+    //                     if (this.deepEqual(expectedParameterType, actualParameterType)) {
 
-    visitFunctionApp(ctx: FunctionAppContext) : CompileTimeTypeEnvironmentToType {
+    //                     } else {
+    //                         throw new Error(`Type mismatch in argument ${i} of call to ${functionName}
+    //                          Expected ${JSON.stringify(actualParameterType)} type ${JSON.stringify(expectedParameterType)}`)
+    //                     }
+    //                 }
+    //                 return functionType.returnType
+    //             }
+    //         }
+    //     }
+    // }
+
+    visitFunctionApp(ctx: FunctionAppContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            let functionName= ctx.NAME().getText()
-            let functionType = this.compile_time_environment_type_look_up(ce, functionName)
+            let functionName = ctx.NAME().getText();
+            let functionType = this.compile_time_environment_type_look_up(ce, functionName);
+            
+            if (functionType.dropped) {
+                throw new Error(`Cannot call function ${functionName} as it has been dropped`);
+            }
+            if (functionType.moved) {
+                throw new Error(`Cannot call function ${functionName} as it has been moved`);
+            }
+            
             if (functionType.type !== "function") {
-                throw new Error(`Call to non-function object : ${functionName} type : ${JSON.stringify(functionType)}`)
+                throw new Error(`Call to non-function object: ${functionName} type: ${JSON.stringify(functionType)}`);
             } else {
-                let expectedParameterTypes = functionType.parameterType
-                let actualParameters = ctx.expression()
+                let expectedParameterTypes = functionType.parameterType;
+                let actualParameters = ctx.expression();
+                
                 if (actualParameters.length !== expectedParameterTypes.length) {
-                    throw new Error(`Incorrect number of argument. Expect ${expectedParameterTypes.length},
-                     but got ${actualParameters.length}`)
+                    throw new Error(`Incorrect number of arguments. Expected ${expectedParameterTypes.length}, but got ${actualParameters.length}`);
                 } else {
+                    // Create a new environment for parameter validation
+                    let parameterEnvironment: TypeClosure[] = [];
+                    let parameterBorrowMap = new Map(); // Track which variables are borrowed by which parameters
+                    
+                    // Check each parameter and handle special cases
                     for (let i = 0; i < expectedParameterTypes.length; i++) {
-                        let expectedParameterType: TypeObject = expectedParameterTypes[i]
-                        let actualParameterType = this.visit(actualParameters[i])(ce)
-                        if (actualParameters[i] instanceof VariableContext) {}
-                        if (this.deepEqual(expectedParameterType, actualParameterType)) {
-
-                        } else {
-                            throw new Error(`Type mismatch in argument ${i} of call to ${functionName}
-                             Expected ${JSON.stringify(actualParameterType)} type ${JSON.stringify(expectedParameterType)}`)
+                        let expectedParameterType: TypeObject = expectedParameterTypes[i];
+                        let actualParameter = actualParameters[i];
+                        let actualParameterType = this.visit(actualParameter)(ce);
+                        
+                        if (!this.deepEqual(expectedParameterType, actualParameterType)) {
+                            throw new Error(`Type mismatch in argument ${i} of call to ${functionName}. Expected ${JSON.stringify(expectedParameterType)}, got ${JSON.stringify(actualParameterType)}`);
+                        }
+                        
+                        // Create parameter closure with proper parameter name from function declaration
+                        const paramName = functionType.paramNames && functionType.paramNames[i] 
+                            ? functionType.paramNames[i] 
+                            : `param${i}`;
+                        
+                        // Handle different parameter cases
+                        if (actualParameter instanceof VariableContext) {
+                            const argName = (actualParameter as VariableContext).NAME().getText();
+                            const argVar = this.compile_time_environment_type_look_up(ce, argName);
+                            
+                            // Add to parameter environment with appropriate state
+                            parameterEnvironment.push({
+                                name: paramName,
+                                type: argVar.type,
+                                dropped: false,
+                                moved: false,
+                                mutable: argVar.mutable,
+                                borrowState: {mutableBorrows: 0, immutableBorrows: 0},
+                                // For non-primitive types, track that the value is moved to the parameter
+                                borrowFrom: argVar.type !== 'int' && argVar.type !== 'bool' ? argVar : undefined
+                            });
+                            
+                            // If non-primitive value, mark as moved
+                            if (argVar.type !== 'int' && argVar.type !== 'bool' && !argVar.type.startsWith('*')) {
+                                argVar.moved = true;
+                            }
+                        } else if (actualParameter instanceof BorrowContext) {
+                            const argName = (actualParameter as BorrowContext).NAME().getText();
+                            const argVar = this.compile_time_environment_type_look_up(ce, argName);
+                            
+                            // Add to parameter environment as an immutable reference
+                            parameterEnvironment.push({
+                                name: paramName,
+                                type: `*${argVar.type}`,
+                                dropped: false,
+                                moved: false,
+                                mutable: false,
+                                borrowState: {mutableBorrows: 0, immutableBorrows: 0},
+                                borrowFrom: argVar
+                            });
+                            
+                            // Update the borrow state of the original variable
+                            argVar.borrowState.immutableBorrows++;
+                            parameterBorrowMap.set(i, {variable: argVar, mutable: false});
+                        } 
+                        else if (actualParameter instanceof MutBorrowContext) {
+                            const argName = (actualParameter as MutBorrowContext).NAME().getText();
+                            const argVar = this.compile_time_environment_type_look_up(ce, argName);
+                            console.log(util.inspect(argVar, true, null, true));
+                            
+                            // Add to parameter environment as a mutable reference
+                            parameterEnvironment.push({
+                                name: paramName,
+                                type: `*mut ${argVar.type}`,
+                                dropped: false,
+                                moved: false,
+                                mutable: true,
+                                borrowState: {mutableBorrows: 0, immutableBorrows: 0},
+                                borrowFrom: argVar
+                            });
+                            
+                            // Update the borrow state of the original variable
+                            argVar.borrowState.mutableBorrows++;
+                            parameterBorrowMap.set(i, {variable: argVar, mutable: true});
+                        } 
+                        else {
+                            // For literal and other non-variable expressions
+                            parameterEnvironment.push({
+                                name: paramName,
+                                type: actualParameterType.type,
+                                dropped: false,
+                                moved: false,
+                                mutable: false,
+                                borrowState: {mutableBorrows: 0, immutableBorrows: 0}
+                            });
                         }
                     }
-                    return functionType.returnType
+                    
+                    // Create a new extended environment with current context
+                    let functionCallEnv = this.compile_time_environment_extend(parameterEnvironment, ce);
+                    
+                    // Recheck the function body with the current context if available
+                    if (functionType.block) {
+                        // Recheck the function body with the new environment
+                        let recheckedReturnType = this.returnTypeFinder.visit(functionType.block)(functionCallEnv);
+                        
+                        // Ensure the return type is still valid
+                        if (!this.deepEqual(recheckedReturnType, functionType.returnType)) {
+                            throw new Error(`Function body no longer type checks. Expected return type ${JSON.stringify(functionType.returnType)}, but got ${JSON.stringify(recheckedReturnType)}`);
+                        }
+                    }
+                    
+                    // Release any borrows when function returns
+                    parameterBorrowMap.forEach((borrowed, paramIndex) => {
+                        if (borrowed.mutable) {
+                            borrowed.variable.borrowState.mutableBorrows--;
+                        } else {
+                            borrowed.variable.borrowState.immutableBorrows--;
+                        }
+                    });
+                    
+                    return functionType.returnType;
                 }
             }
         }
@@ -323,7 +545,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             if (innerType !== "int" && innerType !== "bool" && innerType !== "string") {
                 throw new Error(`Can only create pointer for int, bool, and string, but got ${JSON.stringify(innerType)}`)
             }
-            return {type: '*'+innerType};
+            return { type: '*' + innerType };
         };
     }
 
@@ -362,7 +584,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             if (innerType.startsWith('*')) {
                 throw new Error('Cannot borrow a reference as mutable');
             }
-            return {type: '*mut '+innerType};
+            return { type: '*mut ' + innerType };
         };
     }
 
@@ -407,7 +629,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                 throw new Error(`Cannot modify through an immutable reference`);
             }
 
-            return {type: baseType};
+            return { type: baseType };
         };
     }
 
@@ -448,7 +670,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                     this.compile_time_environment_type_look_up(ce, (ctx.expression() as BorrowContext).NAME().getText())
             }
 
-            return {type: variable.type, parameterType: variable.parameterType, returnType: variable.returnType};
+            return { type: variable.type, parameterType: variable.parameterType, returnType: variable.returnType };
         }
     }
 
@@ -488,11 +710,11 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                 throw new Error(`Type mismatch: expected '${baseType}', found '${rightType.type}'`);
             }
 
-            return {type: baseType};
+            return { type: baseType };
         }
     }
 
-    visitMutConstDecl(ctx: MutConstDeclContext) : CompileTimeTypeEnvironmentToType {
+    visitMutConstDecl(ctx: MutConstDeclContext): CompileTimeTypeEnvironmentToType {
         return ce => {
             let declared_type = ctx.type().getText()
             let name = ctx.NAME().getText()
@@ -527,7 +749,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
 
     // Need modification decrement count for dropped borrowing
     // Can do deep copy to ce
-    visitBlock(ctx: BlockContext) : CompileTimeTypeEnvironmentToType {
+    visitBlock(ctx: BlockContext): CompileTimeTypeEnvironmentToType {
         return ce => {
             let vs = this.scan_sequence(ctx.sequence(), ce)
             let e = this.compile_time_environment_extend(vs, ce)
@@ -537,7 +759,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                 if (v.borrowFrom && !v.moved) {
                     // This local variable borrowed from another variable
                     const borrowedVariable = v.borrowFrom;
-                    
+
                     // Determine what type of borrow it was and decrement the appropriate counter
                     if (v.type.includes('*mut')) {
                         // It was a mutable borrow
@@ -553,19 +775,19 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
         }
     }
 
-    visitNot(ctx: NotContext) : CompileTimeTypeEnvironmentToType {
+    visitNot(ctx: NotContext): CompileTimeTypeEnvironmentToType {
         return ce => {
             let op1_type = this.visit(ctx.expression())(ce)
             if (op1_type.type !== "bool") {
                 throw new Error(`Expected boolean for !, but got ${op1_type.type}`)
             }
-            return {type : "bool"}
+            return { type: "bool" }
         }
 
     }
 
-    visitVariable(ctx: VariableContext) : CompileTimeTypeEnvironmentToType {
-        return  ce => {
+    visitVariable(ctx: VariableContext): CompileTimeTypeEnvironmentToType {
+        return ce => {
             let name = ctx.NAME().getText()
             let lookupResult = this.compile_time_environment_type_look_up(ce, name)
 
@@ -581,7 +803,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                 throw new Error(`Cannot use '${name}' because it is mutably borrowed`);
             }
 
-            let result: TypeObject = {type : lookupResult.type}
+            let result: TypeObject = { type: lookupResult.type }
             if ("parameterType" in lookupResult && "returnType" in lookupResult) {
                 result.parameterType = lookupResult.parameterType
                 result.returnType = lookupResult.returnType
@@ -591,7 +813,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
         }
     }
 
-    visitMulDiv(ctx: MulDivContext) : CompileTimeTypeEnvironmentToType {
+    visitMulDiv(ctx: MulDivContext): CompileTimeTypeEnvironmentToType {
         return ce => {
             let op1_type = this.visit(ctx.expression(0))(ce)
             let op2_type = this.visit(ctx.expression(1))(ce)
@@ -599,7 +821,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             if (op1_type.type !== "int" || op2_type.type !== "int") {
                 throw new Error(`Expect two numbers for ${op}, but got ${op1_type.type} and ${op2_type.type}`)
             }
-            return {type : "int"}
+            return { type: "int" }
         }
 
     }
@@ -612,44 +834,44 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             if (op1_type.type !== "int" || op2_type.type !== "int") {
                 throw new Error(`Expect two numbers for ${op}, but got ${op1_type.type} and ${op2_type.type}`)
             }
-            return {type : "int"}
+            return { type: "int" }
         }
 
     }
 
-    visitParens(ctx: ParensContext) : CompileTimeTypeEnvironmentToType {
+    visitParens(ctx: ParensContext): CompileTimeTypeEnvironmentToType {
         return this.visit(ctx.expression())
     }
 
-    visitLiterals(ctx: LiteralsContext) : CompileTimeTypeEnvironmentToType {
+    visitLiterals(ctx: LiteralsContext): CompileTimeTypeEnvironmentToType {
         return this.visit(ctx.literal())
     }
 
-    visitLogical(ctx: LogicalContext) : CompileTimeTypeEnvironmentToType {
-        return  ce => {
+    visitLogical(ctx: LogicalContext): CompileTimeTypeEnvironmentToType {
+        return ce => {
             let op1_type = this.visit(ctx.expression(0))(ce)
             let op2_type = this.visit(ctx.expression(1))(ce)
             let op = ctx.getChild(1).getText()
             if (op1_type.type !== "bool" || op2_type.type !== "bool") {
                 throw new Error(`Expect two booleans for ${op}, but got ${op1_type.type} and ${op2_type.type}`)
             }
-            return {type: "bool"}
+            return { type: "bool" }
         }
 
     }
 
-    visitNegate(ctx: NegateContext) : CompileTimeTypeEnvironmentToType {
+    visitNegate(ctx: NegateContext): CompileTimeTypeEnvironmentToType {
         return ce => {
             let op1_type = this.visit(ctx.expression())(ce)
             if (op1_type.type !== "int") {
                 throw new Error(`Expected integer for -unary, but got ${op1_type.type}`)
             }
-            return {type : "int"}
+            return { type: "int" }
         }
 
     }
 
-    visitComparison(ctx: ComparisonContext) : CompileTimeTypeEnvironmentToType {
+    visitComparison(ctx: ComparisonContext): CompileTimeTypeEnvironmentToType {
         return ce => {
             let op1_type = this.visit(ctx.expression(0))(ce)
             let op2_type = this.visit(ctx.expression(1))(ce)
@@ -657,133 +879,135 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             if (op1_type.type !== "int" || op2_type.type !== "int") {
                 throw new Error(`Expect two numbers for ${op}, but got ${op1_type.type} and ${op2_type.type}`)
             }
-            return {type : "bool"}
+            return { type: "bool" }
         }
     }
 
-    visitEquality(ctx: EqualityContext) : CompileTimeTypeEnvironmentToType {
+    visitEquality(ctx: EqualityContext): CompileTimeTypeEnvironmentToType {
         return ce => {
             let op1_type = this.visit(ctx.expression(0))(ce)
             let op2_type = this.visit(ctx.expression(1))(ce)
             let op = ctx.getChild(1).getText()
-            if (! (op1_type.type === op2_type.type && (op1_type.type === "int" || op1_type.type === "bool")) ) {
+            if (!(op1_type.type === op2_type.type && (op1_type.type === "int" || op1_type.type === "bool"))) {
                 throw new Error(`Expect two numbers or booleans for ${op}, but got ${op1_type.type} and ${op2_type.type}`)
             }
-            return {type : "bool"}
+            return { type: "bool" }
         }
     }
 
-    visitLambda(ctx: LambdaContext) : CompileTimeTypeEnvironmentToType {
+    visitLambda(ctx: LambdaContext): CompileTimeTypeEnvironmentToType {
         return this.visit(ctx.lambdaExpr())
     }
 
-    visitInteger(ctx: IntegerContext) : CompileTimeTypeEnvironmentToType {
+    visitInteger(ctx: IntegerContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "int"}
+            return { type: "int" }
         }
 
     }
-    visitBoolean(ctx: BooleanContext) : CompileTimeTypeEnvironmentToType {
+    visitBoolean(ctx: BooleanContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "bool"}
+            return { type: "bool" }
         }
     }
 
-    visitString(ctx: StringContext) : CompileTimeTypeEnvironmentToType {
+    visitString(ctx: StringContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "string"}
+            return { type: "string" }
         }
     }
 
-    visitUndefined(ctx: UndefinedContext) : CompileTimeTypeEnvironmentToType {
+    visitUndefined(ctx: UndefinedContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "undefined"}
+            return { type: "undefined" }
         }
     }
 
-    visitLambdaExpr(ctx: LambdaExprContext) : CompileTimeTypeEnvironmentToType {
+    visitLambdaExpr(ctx: LambdaExprContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "int"}
+            return { type: "int" }
         }
 
     }
 
-    visitIntType(ctx: IntTypeContext) : CompileTimeTypeEnvironmentToType {
+    visitIntType(ctx: IntTypeContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "int"}
+            return { type: "int" }
         }
     }
 
-    visitBoolType(ctx: BoolTypeContext) : CompileTimeTypeEnvironmentToType {
+    visitBoolType(ctx: BoolTypeContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "bool"}
+            return { type: "bool" }
         }
     }
 
-    visitBoolPointerType(ctx: BoolPointerTypeContext) : CompileTimeTypeEnvironmentToType {
+    visitBoolPointerType(ctx: BoolPointerTypeContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "*bool"}
+            return { type: "*bool" }
         }
     }
 
-    visitBoolMutPointerTypeBoolPointerType(ctx: BoolMutPointerTypeContext) : CompileTimeTypeEnvironmentToType {
+    visitBoolMutPointerTypeBoolPointerType(ctx: BoolMutPointerTypeContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "*mut bool"}
+            return { type: "*mut bool" }
         }
     }
 
-    visitStringType(ctx: StringTypeContext) : CompileTimeTypeEnvironmentToType {
+    visitStringType(ctx: StringTypeContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "string"}
+            return { type: "string" }
         }
     }
 
-    visitStringPointerType(ctx: StringPointerTypeContext) : CompileTimeTypeEnvironmentToType {
+    visitStringPointerType(ctx: StringPointerTypeContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "*string"}
+            return { type: "*string" }
         }
     }
 
-    visitStringMutPointerType(ctx: StringMutPointerTypeContext) : CompileTimeTypeEnvironmentToType {
+    visitStringMutPointerType(ctx: StringMutPointerTypeContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "*mut string"}
+            return { type: "*mut string" }
         }
     }
 
-    visitIntPointerType(ctx: IntPointerTypeContext) : CompileTimeTypeEnvironmentToType {
+    visitIntPointerType(ctx: IntPointerTypeContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "*int"}
+            return { type: "*int" }
         }
     }
 
-    visitIntMutPointerType(ctx: IntMutPointerTypeContext) : CompileTimeTypeEnvironmentToType {
+    visitIntMutPointerType(ctx: IntMutPointerTypeContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "*mut int"}
+            return { type: "*mut int" }
         }
     }
 
-    visitUndefinedType (ctx : UndefinedTypeContext) : CompileTimeTypeEnvironmentToType {
+    visitUndefinedType(ctx: UndefinedTypeContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            return {type: "undefined"}
+            return { type: "undefined" }
         }
     }
 
-    visitFunctionType(ctx: FunctionTypeContext) : CompileTimeTypeEnvironmentToType {
+    visitFunctionType(ctx: FunctionTypeContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            let parameterTypes : TypeObject[] = []
-            let returnType : TypeObject
+            let parameterTypes: TypeObject[] = []
+            let returnType: TypeObject
             let types = ctx.type_()
             for (let i = 0; i < types.length - 1; i++) {
                 let current_para = this.visit(types[i])(ce)
                 if (current_para.type !== "function") {
-                    parameterTypes[i] = {type : current_para.type}
+                    parameterTypes[i] = { type: current_para.type }
                 } else {
-                    parameterTypes[i] = {type : "function",
-                        parameterType: current_para.parameterType, returnType: current_para.returnType}
+                    parameterTypes[i] = {
+                        type: "function",
+                        parameterType: current_para.parameterType, returnType: current_para.returnType
+                    }
                 }
             }
-            returnType =  this.visit(types[types.length - 1])(ce)
-            return {type: "function", parameterTypes, returnType}
+            returnType = this.visit(types[types.length - 1])(ce)
+            return { type: "function", parameterTypes, returnType }
         }
     }
 
