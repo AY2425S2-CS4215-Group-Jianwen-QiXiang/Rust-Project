@@ -156,7 +156,7 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
                 for (let statement of statements) {
                     result = this.visit(statement)(ce)
                     if (result.type === "return") {
-                        return {type : result.returnType.type}
+                        return result
                     }
                 }
                 return {type : "undefined"}
@@ -221,7 +221,9 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
                 throw new Error(`Different types in if statement. Type for consequence: ${cons_type.type} Type for alternative: ${alt_type.type}`)
             } else if (cons_type.type === "return") {
                 if (cons_type.returnType == cons_type.returnType) {
-
+                    return cons_type
+                } else {
+                    throw new Error(`Different types in if statement. Type for consequence: ${cons_type.returnType} Type for alternative: ${alt_type.returnType}`)
                 }
             }
             return cons_type
@@ -262,7 +264,13 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
                     returnType: declaredParameterTypes[i - 1].returnType, borrowState:{mutableBorrows:0, immutableBorrows:0}, moved:false}
             }
             let e = this.compile_time_environment_extend(parameterName, ce)
-            let actualReturnType = this.visit(ctx.block())(e)
+            let ReturnObject = this.visit(ctx.block())(e)
+            let actualReturnType: TypeObject = {type: ""}
+            if (ReturnObject.type == "return") {
+                actualReturnType.type = ReturnObject.returnType.type
+            } else {
+                actualReturnType.type = "undefined"
+            }
 
             if (this.deepEqual(actualReturnType, declaredReturnType)) {
                 return { type : "function", parameterTypes : declaredParameterTypes, returnTypes : declaredReturnType }

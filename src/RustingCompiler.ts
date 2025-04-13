@@ -66,7 +66,7 @@ type TypeClosure = {
 
 type StringMatrixFunction = (arg: string[][]) => undefined;
 
-export class RustedCompiler extends AbstractParseTreeVisitor<StringMatrixFunction> implements SimpleLangVisitor<StringMatrixFunction> {
+export class RustingCompiler extends AbstractParseTreeVisitor<StringMatrixFunction> implements SimpleLangVisitor<StringMatrixFunction> {
     // Visit a parse tree produced by SimpleLangParser#prog
     instruction : object[] = []
     wc : number = 0

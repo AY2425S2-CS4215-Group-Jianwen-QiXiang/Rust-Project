@@ -3,7 +3,7 @@ import { IRunnerPlugin } from "conductor/dist/conductor/runner/types";
 import { CharStream, CommonTokenStream, AbstractParseTreeVisitor } from 'antlr4ng';
 import { SimpleLangLexer } from './parser/src/SimpleLangLexer';
 import { SimpleLangTypeChecker} from  './SimpleLangTypeChecker'
-import { RustedCompiler} from "./RustedCompiler";
+import { RustingCompiler} from "./RustingCompiler";
 import {
     BorrowContext,
     MutBorrowContext,
@@ -38,7 +38,7 @@ import {
 } from './parser/src/SimpleLangParser';
 import { SimpleLangVisitor } from './parser/src/SimpleLangVisitor';
 import {type} from "node:os";
-import {RustedMachine} from "./RustedMachine";
+import {RustingMachine} from "./RustingMachine";
 
 type TypeObject = {
     type: string;
@@ -68,13 +68,13 @@ type StringMatrixFunction = (arg: string[][]) => undefined;
 
 export class SimpleLangEvaluator extends BasicEvaluator {
     private executionCount: number;
-    private visitor : RustedCompiler;
+    private visitor : RustingCompiler;
     private typeChecker: SimpleLangTypeChecker;
 
     constructor(conductor: IRunnerPlugin) {
         super(conductor);
         this.executionCount = 0;
-        this.visitor = new RustedCompiler();
+        this.visitor = new RustingCompiler();
         this.typeChecker = new SimpleLangTypeChecker()
     }
 
@@ -129,13 +129,13 @@ export class Parser {
 
 export class Evaluator {
     private executionCount: number;
-    private visitor: RustedCompiler;
+    private visitor: RustingCompiler;
     private typeChecker: SimpleLangTypeChecker;
-    private machine : RustedMachine;
+    private machine : RustingMachine;
 
     constructor() {
         this.executionCount = 0;
-        this.visitor = new RustedCompiler();
+        this.visitor = new RustingCompiler();
         this.typeChecker = new SimpleLangTypeChecker()
 
     }
@@ -166,7 +166,7 @@ export class Evaluator {
         console.log(this.typeChecker.visit(tree)(global_type_ce))
         this.visitor.visit(tree)(global_ce)
             //console.log(this.visitor.instructions_for_display());
-        this.machine = new RustedMachine(this.visitor.instruction)
+        this.machine = new RustingMachine(this.visitor.instruction)
 
 
         // Send the result to the REPL

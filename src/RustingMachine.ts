@@ -6,7 +6,7 @@ type Pointer = {
     value_index: number
 };
 
-export class RustedMachine {
+export class RustingMachine {
     instructions: any[];
     PC : number;
     OS : number[];
