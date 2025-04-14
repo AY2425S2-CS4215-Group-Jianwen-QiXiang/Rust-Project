@@ -271,8 +271,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             if (this.deepEqual(actualReturnType, declaredReturnType)) {
                 return { type : "function", parameterTypes : declaredParameterTypes, returnTypes : declaredReturnType }
             } else {
-                throw new Error(`Mismatch in return type, expected : ${JSON.stringify(declaredReturnType)},
-                 but got ${JSON.stringify(actualReturnType)}`)
+                throw new Error(`Mismatch in return type, expected : ${JSON.stringify(declaredReturnType.type)}, but got ${JSON.stringify(actualReturnType.type)}`)
             }
         }
     }
@@ -282,13 +281,12 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             let functionName= ctx.NAME().getText()
             let functionType = this.compile_time_environment_type_look_up(ce, functionName)
             if (functionType.type !== "function") {
-                throw new Error(`Call to non-function object : ${functionName} type : ${JSON.stringify(functionType)}`)
+                throw new Error(`Call to non-function object : ${functionName} type : ${JSON.stringify(functionType.type)}`)
             } else {
                 let expectedParameterTypes = functionType.parameterType
                 let actualParameters = ctx.expression()
                 if (actualParameters.length !== expectedParameterTypes.length) {
-                    throw new Error(`Incorrect number of argument. Expect ${expectedParameterTypes.length},
-                     but got ${actualParameters.length}`)
+                    throw new Error(`Incorrect number of argument. Expect ${expectedParameterTypes.length}, but got ${actualParameters.length}`)
                 } else {
                     for (let i = 0; i < expectedParameterTypes.length; i++) {
                         let expectedParameterType: TypeObject = expectedParameterTypes[i]
@@ -297,8 +295,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                         if (this.deepEqual(expectedParameterType, actualParameterType)) {
 
                         } else {
-                            throw new Error(`Type mismatch in argument ${i} of call to ${functionName}
-                             Expected ${JSON.stringify(actualParameterType)} type ${JSON.stringify(expectedParameterType)}`)
+                            throw new Error(`Type mismatch in argument ${i + 1} of call to ${functionName}, Expected ${JSON.stringify(actualParameterType.type)}, but got ${JSON.stringify(expectedParameterType.type)}`)
                         }
                     }
                     return functionType.returnType

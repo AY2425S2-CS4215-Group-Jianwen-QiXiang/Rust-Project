@@ -275,8 +275,7 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
             if (this.deepEqual(actualReturnType, declaredReturnType)) {
                 return { type : "function", parameterTypes : declaredParameterTypes, returnTypes : declaredReturnType }
             } else {
-                throw new Error(`Mismatch in return type, expected : ${JSON.stringify(declaredReturnType)},
-                 but got ${JSON.stringify(actualReturnType)}`)
+                throw new Error(`Mismatch in return type, expected : ${JSON.stringify(declaredReturnType.type)},but got ${JSON.stringify(actualReturnType.type)}`)
             }
         }
     }
@@ -295,8 +294,7 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
                 let expectedParameterTypes = functionType.parameterType
                 let actualParameters = ctx.expression()
                 if (actualParameters.length !== expectedParameterTypes.length) {
-                    throw new Error(`Incorrect number of argument. Expect ${expectedParameterTypes.length},
-                     but got ${actualParameters.length}`)
+                    throw new Error(`Incorrect number of argument. Expect ${expectedParameterTypes.length}, but got ${actualParameters.length}`)
                 } else {
                     for (let i = 0; i < expectedParameterTypes.length; i++) {
                         let expectedParameterType: TypeObject = expectedParameterTypes[i]
@@ -305,8 +303,7 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
                         if (this.deepEqual(expectedParameterType, actualParameterType)) {
 
                         } else {
-                            throw new Error(`Type mismatch in argument ${i} of call to ${functionName}
-                             Expected ${JSON.stringify(actualParameterType)} type ${JSON.stringify(expectedParameterType)}`)
+                            throw new Error(`Type mismatch in argument ${i + 1} of call to ${functionName}, Expected ${JSON.stringify(actualParameterType.type)}, but got ${JSON.stringify(expectedParameterType.type)}`)
                         }
                     }
                     return functionType.returnType

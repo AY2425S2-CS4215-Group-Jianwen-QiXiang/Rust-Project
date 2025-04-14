@@ -245,6 +245,7 @@ export class RustingCompiler extends AbstractParseTreeVisitor<StringMatrixFuncti
             }
             let e = this.compile_time_environment_extend(parameterName, ce)
             this.visit(ctx.block())(e)
+            this.instruction[this.wc++] = {tag: "POP"}
             this.instruction[this.wc++] = {tag: 'LDC', val: undefined}
             this.instruction[this.wc++] = {tag: 'RESET'}
             goto_instruction.address = this.wc
