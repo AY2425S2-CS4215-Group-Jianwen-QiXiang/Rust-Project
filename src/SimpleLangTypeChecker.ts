@@ -71,7 +71,8 @@ type TypeClosure = {
     borrowFrom?: TypeClosure;
     parameterType?: TypeObject[];
     returnType?: TypeObject;
-    block?: BlockContext;
+    paramNames?: string[];
+    block?: BlockContext; // Store the function body for re-checking
 };
 
 
