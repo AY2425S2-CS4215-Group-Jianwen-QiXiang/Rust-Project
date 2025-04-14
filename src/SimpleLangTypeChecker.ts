@@ -243,7 +243,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
     visitBlockStmt(ctx: BlockStmtContext) : CompileTimeTypeEnvironmentToType {
         return this.visit(ctx.block())
     }
-
+/*
     visitFunctionDecl(ctx: FunctionDeclContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
             let declaredParameterTypes: TypeObject[] = []
@@ -277,7 +277,43 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             }
         }
     }
+*/
+    visitFunctionDecl(ctx: FunctionDeclContext): CompileTimeTypeEnvironmentToType {
+        return ce => {
+            let declaredParameterTypes: TypeObject[] = [];
+            let declaredReturnType: TypeObject;
+            let types = ctx.type_();
 
+            // Parse parameter types
+            for (let i = 0; i < types.length - 1; i++) {
+                declaredParameterTypes[i] = this.visit(types[i])(ce);
+            }
+
+            // Parse return type
+            declaredReturnType = this.visit(types[types.length - 1])(ce);
+
+            // Store function information in the type closure
+            const functionName = ctx.NAME()[0].getText();
+            const functionClosure = this.compile_time_environment_type_look_up(ce, functionName);
+
+            // Store the function body
+            functionClosure.block = ctx.block();
+
+            // Store parameter names
+            functionClosure.paramNames = [];
+            for (let i = 1; i < ctx.NAME().length; i++) {
+                functionClosure.paramNames.push(ctx.NAME()[i].getText());
+            }
+
+            // Return function type
+            return {
+                type: "function",
+                parameterType: declaredParameterTypes,
+                returnType: declaredReturnType
+            };
+        }
+    }
+    
     visitFunctionApp(ctx: FunctionAppContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
             let functionName= ctx.NAME().getText()
