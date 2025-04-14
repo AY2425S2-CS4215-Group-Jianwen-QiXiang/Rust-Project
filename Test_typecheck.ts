@@ -38,6 +38,7 @@ console.log((new Evaluator()).evaluate("let z : int = 10; *z = 10;")) // Trying 
 console.log("\n")
 console.log("Test 10 for function declaration")
 console.log((new Evaluator()).evaluate("fn f(a : int) -> int {return false;}"))
+console.log((new Evaluator()).evaluate("fn f(a : int) -> int {return false;} f(1);"))
 console.log("\n")
 console.log("Test 10 for function application")
 console.log((new Evaluator()).evaluate("fn f(a : int) -> int {return 1;} f(1 ,2);")) // Incorrect number of argument
