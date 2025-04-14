@@ -165,7 +165,7 @@ export class Evaluator {
         try {
         let global_ce: string[][] = []
         let global_type_ce: TypeClosure[][] = []
-        console.log(this.typeChecker.visit(tree)(global_type_ce))
+        this.typeChecker.visit(tree)(global_type_ce)
         this.visitor.visit(tree)(global_ce)
             //console.log(this.visitor.instructions_for_display());
         this.machine = new RustingMachine(this.visitor.instruction)

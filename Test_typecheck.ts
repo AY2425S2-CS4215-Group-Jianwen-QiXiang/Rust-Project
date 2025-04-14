@@ -17,10 +17,12 @@ console.log("Test 4 for variable declaration, reassignment and accessing")
 console.log((new Evaluator()).evaluate("let mut z : int = 10; z = true; z;"))
 console.log("\n")
 console.log("Test 5 for if-else statement")
-console.log(new Evaluator().evaluate("if (false) {1;} else {true;}"))
+console.log(new Evaluator().evaluate("if (false) {1;} else {true;}")) // Different result type in two branches
+console.log(new Evaluator().evaluate("if (1) {1;} else {1;}")) // Predicate is not boolean
 console.log("\n")
 console.log("Test 6 for while loop statement")
 console.log(new Evaluator().evaluate("let mut z: int = 0; while (z < 10) {z = z + false;} z;"))
+console.log(new Evaluator().evaluate("let mut z: int = 0; while (z) {z = z + 1;} z;")) // Predicate is not boolean
 console.log("\n")
 console.log("Test 7 for block statement")
 console.log(new Evaluator().evaluate("let mut z: int  = 10; {let mut z : int = 20; z = false;} z; "))
@@ -36,11 +38,11 @@ console.log((new Evaluator()).evaluate("let mut z : int = 10; let p : *mut bool 
 console.log((new Evaluator()).evaluate("let mut z : int = 10; let p : *mut int = &mut z; *p = false;"))
 console.log((new Evaluator()).evaluate("let z : int = 10; *z = 10;")) // Trying to modify value through mutable reference with a non-pointer value
 console.log("\n")
-console.log("Test 10 for function declaration")
+console.log("Test 10 for function declaration") // Check on use
 console.log((new Evaluator()).evaluate("fn f(a : int) -> int {return false;}"))
 console.log((new Evaluator()).evaluate("fn f(a : int) -> int {return false;} f(1);"))
 console.log("\n")
-console.log("Test 10 for function application")
+console.log("Test 11 for function application")
 console.log((new Evaluator()).evaluate("fn f(a : int) -> int {return 1;} f(1 ,2);")) // Incorrect number of argument
 console.log((new Evaluator()).evaluate("fn f(a : int) -> int {return 1;} f(false);")) // Incorrect type of argument
 console.log((new Evaluator()).evaluate("let z : int = 10; z(1);")) // Calling non-function value
