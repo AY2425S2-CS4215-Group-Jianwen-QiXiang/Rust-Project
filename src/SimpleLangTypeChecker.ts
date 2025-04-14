@@ -71,6 +71,7 @@ type TypeClosure = {
     borrowFrom?: TypeClosure;
     parameterType?: TypeObject[];
     returnType?: TypeObject;
+    block?: BlockContext;
 };
 
 
