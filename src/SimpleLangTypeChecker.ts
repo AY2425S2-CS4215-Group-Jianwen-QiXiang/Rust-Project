@@ -398,7 +398,6 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                         else if (actualParameter instanceof MutBorrowContext) {
                             const argName = (actualParameter as MutBorrowContext).NAME().getText();
                             const argVar = this.compile_time_environment_type_look_up(ce, argName);
-                            console.log(util.inspect(argVar, true, null, true));
 
                             // Add to parameter environment as a mutable reference
                             parameterEnvironment.push({
