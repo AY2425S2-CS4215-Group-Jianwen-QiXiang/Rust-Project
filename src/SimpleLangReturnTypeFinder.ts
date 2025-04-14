@@ -162,7 +162,7 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
                         return result
                     }
                 }
-                return {type : "undefined"}
+                return result
             }
 
         }
@@ -443,7 +443,7 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
                         }
                     });
 
-                    console.log("Finish Type Checking for function application\n")
+
                     return functionType.returnType;
                 }
             }

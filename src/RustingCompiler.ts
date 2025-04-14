@@ -264,7 +264,6 @@ export class RustingCompiler extends AbstractParseTreeVisitor<StringMatrixFuncti
                 this.visit(parameter)(ce)
             }
             this.instruction[this.wc++] = {tag: 'CALL', arity: parameters.length}
-            console.log("Finish compiling")
         }
     }
 

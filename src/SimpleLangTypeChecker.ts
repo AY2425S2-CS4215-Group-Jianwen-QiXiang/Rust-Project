@@ -435,7 +435,9 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                     if (functionType.block) {
                         // Recheck the function body with the new environment
                         let recheckedReturnType = this.returnTypeFinder.visit(functionType.block)(functionCallEnv);
-
+                        if (recheckedReturnType.type !== "return") {
+                            recheckedReturnType = {type: "return", returnType:{type:"undefined"}}
+                        }
                         // Ensure the return type is still valid
                         if (!this.deepEqual(recheckedReturnType.returnType, functionType.returnType)) {
                             throw new Error(`Expected return type ${JSON.stringify(functionType.returnType.type)}, but got ${JSON.stringify(recheckedReturnType.returnType.type)}`);
@@ -450,7 +452,6 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                             borrowed.variable.borrowState.immutableBorrows--;
                         }
                     });
-
                     return functionType.returnType;
                 }
             }
