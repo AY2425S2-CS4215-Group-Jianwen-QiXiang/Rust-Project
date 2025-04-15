@@ -87,6 +87,7 @@ export class SimpleLangEvaluator extends BasicEvaluator {
             const lexer = new SimpleLangLexer(inputStream);
             const tokenStream = new CommonTokenStream(lexer);
             const parser = new SimpleLangParser(tokenStream);
+            this.compiler = new RustingCompiler();
 
             // Parse the input
             const tree = parser.prog();

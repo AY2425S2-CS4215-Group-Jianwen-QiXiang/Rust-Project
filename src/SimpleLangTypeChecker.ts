@@ -634,8 +634,7 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             // Extract the base type (remove the reference)
             const baseType = innerType.replace(/^\*(mut )?/, '');
 
-            // Check if this is an assignment target
-            // If it's an assignment target, ensure the reference is mutable
+            //  ensure the reference is mutable
             if (!innerType.includes('mut')) {
                 throw new Error(`Cannot modify through an immutable reference`);
             }
