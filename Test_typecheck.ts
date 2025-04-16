@@ -26,6 +26,7 @@ console.log(new Evaluator().evaluate("let mut z: int = 0; while (z) {z = z + 1;}
 console.log("\n")
 console.log("Test 7 for block statement")
 console.log(new Evaluator().evaluate("let mut z: int  = 10; {let mut z : int = 20; z = false;} z; "))
+console.log(new Evaluator().evaluate("let mut z: int  = 10; let mut z : int = 20; z; ")) // Repeated Declaration in the same scope
 console.log("\n")
 console.log("Test 8 for immutable borrow")
 console.log((new Evaluator()).evaluate("let z : int = 10; let p : *bool = &z; *p + 10;"))
