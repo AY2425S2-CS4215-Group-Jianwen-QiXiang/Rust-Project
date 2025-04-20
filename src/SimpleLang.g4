@@ -14,7 +14,7 @@ statement: expression ';'                           # ExprStmt
          | 'while' '(' expression ')' block         # WhileStmt
          | block   # BlockStmt
          | 'return' expression ';'                  #ReturnStmt
-         | 'fn' NAME '(' (NAME ':' type (',' NAME ':' type)*)? ')' '->' type block  # FunctionDecl
+         | 'let' NAME '=' '|' (NAME ':' type (',' NAME ':' type)*)? '|' '->' type block ';'  # FunctionDecl
          ;
 
 block: '{' sequence '}';
@@ -47,13 +47,13 @@ lambdaExpr: (NAME*) '=>' block;
 
 type: 'int' #IntType
     | 'bool' #BoolType
-    | '*int' #IntPointerType
-    | '*bool' #BoolPointerType
-    | '*mut int' #IntMutPointerType
-    | '*mut bool' #BoolMutPointerType
+    | '&int' #IntPointerType
+    | '&bool' #BoolPointerType
+    | '&mut int' #IntMutPointerType
+    | '&mut bool' #BoolMutPointerType
     | 'string' #StringType
-    | '*string' #StringPointerType
-    | '*mut string' #StringMutPointerType
+    | '&string' #StringPointerType
+    | '&mut string' #StringMutPointerType
     | 'fn' '(' (type (',' type)*)? ')' '->' type #FunctionType
     | 'undefined'    #UndefinedType
     ;
