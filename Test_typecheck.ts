@@ -29,21 +29,21 @@ console.log(new Evaluator().evaluate("let mut z: int  = 10; {let mut z : int = 2
 console.log(new Evaluator().evaluate("let mut z: int  = 10; let mut z : int = 20; z; ")) // Repeated Declaration in the same scope
 console.log("\n")
 console.log("Test 8 for immutable borrow")
-console.log((new Evaluator()).evaluate("let z : int = 10; let p : *bool = &z; *p + 10;"))
-console.log((new Evaluator()).evaluate("let z : int = 10; let p : *int = &z; *p || false;"))
-console.log((new Evaluator()).evaluate("let z : int = 10; let p : *int = &z; *p = 1;")) // trying to modify a immutable pointer
+console.log((new Evaluator()).evaluate("let z : int = 10; let p : &bool = &z; *p + 10;"))
+console.log((new Evaluator()).evaluate("let z : int = 10; let p : &int = &z; *p || false;"))
+console.log((new Evaluator()).evaluate("let z : int = 10; let p : &int = &z; *p = 1;")) // trying to modify a immutable pointer
 console.log((new Evaluator()).evaluate("let z : int = 10; *z;")) // Dereference a non-pointer value
 console.log("\n")
 console.log("Test 9 for mutable borrow")
-console.log((new Evaluator()).evaluate("let mut z : int = 10; let p : *mut bool = &mut z;"))
-console.log((new Evaluator()).evaluate("let mut z : int = 10; let p : *mut int = &mut z; *p = false;"))
+console.log((new Evaluator()).evaluate("let mut z : int = 10; let p : &mut bool = &mut z;"))
+console.log((new Evaluator()).evaluate("let mut z : int = 10; let p : &mut int = &mut z; *p = false;"))
 console.log((new Evaluator()).evaluate("let z : int = 10; *z = 10;")) // Trying to modify value through mutable reference with a non-pointer value
 console.log("\n")
 console.log("Test 10 for function declaration") // Check on use
-console.log((new Evaluator()).evaluate("fn f(a : int) -> int {return false;}"))
-console.log((new Evaluator()).evaluate("fn f(a : int) -> int {return false;} f(1);"))
+console.log((new Evaluator()).evaluate("let f = |a : int| -> int {return false;};"))
+console.log((new Evaluator()).evaluate("let f = |a : int| -> int {return false;}; f(1);"))
 console.log("\n")
 console.log("Test 11 for function application")
-console.log((new Evaluator()).evaluate("fn f(a : int) -> int {return 1;} f(1 ,2);")) // Incorrect number of argument
-console.log((new Evaluator()).evaluate("fn f(a : int) -> int {return 1;} f(false);")) // Incorrect type of argument
+console.log((new Evaluator()).evaluate("let f = |a : int| -> int {return 1;}; f(1 ,2);")) // Incorrect number of argument
+console.log((new Evaluator()).evaluate("let f = |a : int| -> int {return 1;}; f(false);")) // Incorrect type of argument
 console.log((new Evaluator()).evaluate("let z : int = 10; z(1);")) // Calling non-function value

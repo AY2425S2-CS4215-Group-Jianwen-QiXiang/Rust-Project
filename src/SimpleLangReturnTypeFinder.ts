@@ -155,14 +155,15 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
             if (statements.length == 0) {
                 return {type : "undefined"}
             } else {
-                let result: TypeObject = {type : "undefined"}
+                let default_return: TypeObject = {type : "return", returnType: {type:"undefined"}}
+
                 for (let statement of statements) {
-                    result = this.visit(statement)(ce)
+                    let result = this.visit(statement)(ce)
                     if (result.type === "return") {
                         return result
                     }
                 }
-                return result
+                return default_return
             }
 
         }
