@@ -68,13 +68,14 @@ type StringMatrixFunction = (arg: string[][]) => undefined;
 
 export class SimpleLangEvaluator extends BasicEvaluator {
     private executionCount: number;
-    private visitor : RustingCompiler;
+    private compiler : RustingCompiler;
     private typeChecker: SimpleLangTypeChecker;
+    private runner : RustingMachine
 
     constructor(conductor: IRunnerPlugin) {
         super(conductor);
         this.executionCount = 0;
-        this.visitor = new RustingCompiler();
+        this.compiler = new RustingCompiler();
         this.typeChecker = new SimpleLangTypeChecker()
     }
 
@@ -86,6 +87,7 @@ export class SimpleLangEvaluator extends BasicEvaluator {
             const lexer = new SimpleLangLexer(inputStream);
             const tokenStream = new CommonTokenStream(lexer);
             const parser = new SimpleLangParser(tokenStream);
+            this.compiler = new RustingCompiler();
 
             // Parse the input
             const tree = parser.prog();
@@ -93,10 +95,11 @@ export class SimpleLangEvaluator extends BasicEvaluator {
             let global_ce : string[][] = []
             let global_type_ce : TypeClosure[][] = []
             this.typeChecker.visit(tree)(global_type_ce)
-            this.visitor.visit(tree)(global_ce)
+            this.compiler.visit(tree)(global_ce)
+            this.runner = new RustingMachine(this.compiler.instruction)
 
             // Send the result to the REPL
-            this.conductor.sendOutput(`Result of expression: ${this.visitor.instructions_for_display()}`);
+            this.conductor.sendOutput(`Result of expression: ${String(this.runner.run())}`);
         }  catch (error) {
             // Handle errors and send them to the REPL
             if (error instanceof Error) {
@@ -163,7 +166,7 @@ export class Evaluator {
         try {
         let global_ce: string[][] = []
         let global_type_ce: TypeClosure[][] = []
-        console.log(this.typeChecker.visit(tree)(global_type_ce))
+        this.typeChecker.visit(tree)(global_type_ce)
         this.visitor.visit(tree)(global_ce)
             //console.log(this.visitor.instructions_for_display());
         this.machine = new RustingMachine(this.visitor.instruction)

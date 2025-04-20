@@ -40,7 +40,7 @@ export class RustingMachine {
         '+': (x, y)      => x + y,
         '*':   (x, y) => x * y,
         '-':   (x, y) => x - y,
-        '/':   (x, y) => x / y,
+        '/':   (x, y) => Math.floor(x / y),
         '%':   (x, y) => x % y,
         '<':   (x, y) => x < y,
         '<=':  (x, y) => x <= y,

@@ -46,6 +46,7 @@ import {
     BoolPointerTypeContext, BoolMutPointerTypeContext, IntPointerTypeContext, IntMutPointerTypeContext
 } from "./parser/src/SimpleLangParser";
 import {Evaluator} from "./SimpleLangEvaluator";
+import util from "util";
 
 type TypeObject = {
     type: string;
@@ -66,6 +67,8 @@ type TypeClosure = {
     borrowFrom?: TypeClosure;
     parameterType?: TypeObject[];
     returnType?: TypeObject;
+    paramNames?: string[];
+    block?: BlockContext; // Store the function body for re-checking
 };
 
 
@@ -159,7 +162,7 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
                         return result
                     }
                 }
-                return {type : "undefined"}
+                return result
             }
 
         }
@@ -246,7 +249,7 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
     visitBlockStmt(ctx: BlockStmtContext) : CompileTimeTypeEnvironmentToType {
         return this.visit(ctx.block())
     }
-
+/*
     visitFunctionDecl(ctx: FunctionDeclContext) : CompileTimeTypeEnvironmentToType {
         return ce => {
             let declaredParameterTypes: TypeObject[] = []
@@ -275,45 +278,178 @@ export class SimpleLangReturnTypeFinder extends AbstractParseTreeVisitor<Compile
             if (this.deepEqual(actualReturnType, declaredReturnType)) {
                 return { type : "function", parameterTypes : declaredParameterTypes, returnTypes : declaredReturnType }
             } else {
-                throw new Error(`Mismatch in return type, expected : ${JSON.stringify(declaredReturnType)},
-                 but got ${JSON.stringify(actualReturnType)}`)
+                throw new Error(`Mismatch in return type, expected : ${JSON.stringify(declaredReturnType.type)},but got ${JSON.stringify(actualReturnType.type)}`)
             }
+        }
+    }*/
+
+    visitFunctionDecl(ctx: FunctionDeclContext): CompileTimeTypeEnvironmentToType {
+        return ce => {
+            let declaredParameterTypes: TypeObject[] = [];
+            let declaredReturnType: TypeObject;
+            let types = ctx.type_();
+
+            // Parse parameter types
+            for (let i = 0; i < types.length - 1; i++) {
+                declaredParameterTypes[i] = this.visit(types[i])(ce);
+            }
+
+            // Parse return type
+            declaredReturnType = this.visit(types[types.length - 1])(ce);
+
+            // Store function information in the type closure
+            const functionName = ctx.NAME()[0].getText();
+            const functionClosure = this.compile_time_environment_type_look_up(ce, functionName);
+
+            // Store the function body
+            functionClosure.block = ctx.block();
+
+            // Store parameter names
+            functionClosure.paramNames = [];
+            for (let i = 1; i < ctx.NAME().length; i++) {
+                functionClosure.paramNames.push(ctx.NAME()[i].getText());
+            }
+
+            // Return function type
+            return {
+                type: "function",
+                parameterType: declaredParameterTypes,
+                returnType: declaredReturnType
+            };
         }
     }
 
-
-    visitFunctionApp(ctx: FunctionAppContext) : CompileTimeTypeEnvironmentToType {
+    visitFunctionApp(ctx: FunctionAppContext): CompileTimeTypeEnvironmentToType {
         return ce => {
-            let functionName= ctx.NAME().getText()
-            let functionType = this.compile_time_environment_type_look_up(ce, functionName)
-            if (functionType.dropped) {
-                throw new Error(`reference to name ${functionName} has been dropped`)
-            }
-            if (functionType.type !== "function") {
-                throw new Error(`Call to non-function object : ${functionName} type : ${JSON.stringify(functionType)}`)
-            } else {
-                let expectedParameterTypes = functionType.parameterType
-                let actualParameters = ctx.expression()
-                if (actualParameters.length !== expectedParameterTypes.length) {
-                    throw new Error(`Incorrect number of argument. Expect ${expectedParameterTypes.length},
-                     but got ${actualParameters.length}`)
-                } else {
-                    for (let i = 0; i < expectedParameterTypes.length; i++) {
-                        let expectedParameterType: TypeObject = expectedParameterTypes[i]
-                        let actualParameterType = this.visit(actualParameters[i])(ce)
-                        if (actualParameters[i] instanceof VariableContext) {}
-                        if (this.deepEqual(expectedParameterType, actualParameterType)) {
+            let functionName = ctx.NAME().getText();
+            let functionType = this.compile_time_environment_type_look_up(ce, functionName);
 
-                        } else {
-                            throw new Error(`Type mismatch in argument ${i} of call to ${functionName}
-                             Expected ${JSON.stringify(actualParameterType)} type ${JSON.stringify(expectedParameterType)}`)
+            if (functionType.dropped) {
+                throw new Error(`Cannot call function ${functionName} as it has been dropped`);
+            }
+            if (functionType.moved) {
+                throw new Error(`Cannot call function ${functionName} as it has been moved`);
+            }
+
+            if (functionType.type !== "function") {
+                throw new Error(`Call to non-function object: ${functionName} type: ${JSON.stringify(functionType.type)}`);
+            } else {
+                let expectedParameterTypes = functionType.parameterType;
+                let actualParameters = ctx.expression();
+
+                if (actualParameters.length !== expectedParameterTypes.length) {
+                    throw new Error(`Incorrect number of arguments. Expected ${expectedParameterTypes.length}, but got ${actualParameters.length}`);
+                } else {
+                    // Create a new environment for parameter validation
+                    let parameterEnvironment: TypeClosure[] = [];
+                    let parameterBorrowMap = new Map(); // Track which variables are borrowed by which parameters
+
+                    // Check each parameter and handle special cases
+                    for (let i = 0; i < expectedParameterTypes.length; i++) {
+                        let expectedParameterType: TypeObject = expectedParameterTypes[i];
+                        let actualParameter = actualParameters[i];
+                        let actualParameterType = this.visit(actualParameter)(ce);
+
+                        if (!this.deepEqual(expectedParameterType, actualParameterType)) {
+                            throw new Error(`Type mismatch in argument ${i} of call to ${functionName}. Expected ${JSON.stringify(expectedParameterType.type)}, got ${JSON.stringify(actualParameterType.type)}`);
+                        }
+
+                        // Create parameter closure with proper parameter name from function declaration
+                        const paramName = functionType.paramNames && functionType.paramNames[i]
+                            ? functionType.paramNames[i]
+                            : `param${i}`;
+
+                        // Handle different parameter cases
+                        if (actualParameter instanceof VariableContext) {
+                            const argName = (actualParameter as VariableContext).NAME().getText();
+                            const argVar = this.compile_time_environment_type_look_up(ce, argName);
+
+                            // Add to parameter environment with appropriate state
+                            parameterEnvironment.push({
+                                name: paramName,
+                                type: argVar.type,
+                                dropped: false,
+                                moved: false,
+                                mutable: argVar.mutable,
+                                borrowState: {mutableBorrows: 0, immutableBorrows: 0},
+                                // For non-primitive types, track that the value is moved to the parameter
+                                borrowFrom: argVar.type !== 'int' && argVar.type !== 'bool' ? argVar : undefined
+                            });
+
+                            // If non-primitive value, mark as moved
+                            if (argVar.type !== 'int' && argVar.type !== 'bool' && !argVar.type.startsWith('*')) {
+                                argVar.moved = true;
+                            }
+                        } else if (actualParameter instanceof BorrowContext) {
+                            const argName = (actualParameter as BorrowContext).NAME().getText();
+                            const argVar = this.compile_time_environment_type_look_up(ce, argName);
+
+                            // Add to parameter environment as an immutable reference
+                            parameterEnvironment.push({
+                                name: paramName,
+                                type: `*${argVar.type}`,
+                                dropped: false,
+                                moved: false,
+                                mutable: false,
+                                borrowState: {mutableBorrows: 0, immutableBorrows: 0},
+                                borrowFrom: argVar
+                            });
+
+                            // Update the borrow state of the original variable
+                            argVar.borrowState.immutableBorrows++;
+                            parameterBorrowMap.set(i, {variable: argVar, mutable: false});
+                        }
+                        else if (actualParameter instanceof MutBorrowContext) {
+                            const argName = (actualParameter as MutBorrowContext).NAME().getText();
+                            const argVar = this.compile_time_environment_type_look_up(ce, argName);
+
+                            // Add to parameter environment as a mutable reference
+                            parameterEnvironment.push({
+                                name: paramName,
+                                type: `*mut ${argVar.type}`,
+                                dropped: false,
+                                moved: false,
+                                mutable: true,
+                                borrowState: {mutableBorrows: 0, immutableBorrows: 0},
+                                borrowFrom: argVar
+                            });
+
+                            // Update the borrow state of the original variable
+                            argVar.borrowState.mutableBorrows++;
+                            parameterBorrowMap.set(i, {variable: argVar, mutable: true});
+                        }
+                        else {
+                            // For literal and other non-variable expressions
+                            parameterEnvironment.push({
+                                name: paramName,
+                                type: actualParameterType.type,
+                                dropped: false,
+                                moved: false,
+                                mutable: false,
+                                borrowState: {mutableBorrows: 0, immutableBorrows: 0}
+                            });
                         }
                     }
-                    return functionType.returnType
+
+                    // Does not revisit for recursive calls anymore
+
+                    // Release any borrows when function returns
+                    parameterBorrowMap.forEach((borrowed, paramIndex) => {
+                        if (borrowed.mutable) {
+                            borrowed.variable.borrowState.mutableBorrows--;
+                        } else {
+                            borrowed.variable.borrowState.immutableBorrows--;
+                        }
+                    });
+
+
+                    return functionType.returnType;
                 }
             }
         }
     }
+
+
 
     visitBorrow(ctx: BorrowContext): CompileTimeTypeEnvironmentToType {
         return ce => {
