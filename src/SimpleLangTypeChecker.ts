@@ -251,98 +251,25 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
         return this.visit(ctx.block())
     }
 
-    // visitFunctionDecl(ctx: FunctionDeclContext) : CompileTimeTypeEnvironmentToType {
-    //     return ce => {
-    //         let declaredParameterTypes: TypeObject[] = []
-    //         let declaredReturnType: TypeObject
-    //         let types = ctx.type_()
-    //         for (let i = 0; i < types.length - 1; i++) {
-    //             declaredParameterTypes[i] = this.visit(types[i])(ce)
-    //         }
-    //         declaredReturnType = this.visit(types[types.length - 1])(ce)
-    //         let allNames = ctx.NAME()
-    //         let parameterName: TypeClosure[] = []
-    //         for (let i = 1; i < allNames.length; i++) {
-    //             parameterName[i - 1] = {name:allNames[i].getText(), type: declaredParameterTypes[i - 1].type, dropped: false,
-    //                 mutable:false, parameterType:declaredParameterTypes[i - 1].parameterType,
-    //                 returnType: declaredParameterTypes[i - 1].returnType, borrowState:{mutableBorrows:0, immutableBorrows:0}, moved: false}
-    //         }
-    //         let e = this.compile_time_environment_extend(parameterName, ce)
-    //         let actualReturnType = this.returnTypeFinder.visit(ctx.block())(e)
-
-    //         if (this.deepEqual(actualReturnType, declaredReturnType)) {
-    //             return { type : "function", parameterTypes : declaredParameterTypes, returnTypes : declaredReturnType }
-    //         } else {
-    //             throw new Error(`Mismatch in return type, expected : ${JSON.stringify(declaredReturnType)},
-    //              but got ${JSON.stringify(actualReturnType)}`)
-    //         }
-    //     }
-    // }
-    // visitFunctionDecl(ctx: FunctionDeclContext): CompileTimeTypeEnvironmentToType {
-    //     return ce => {
-    //         let declaredParameterTypes: TypeObject[] = []
-    //         let declaredReturnType: TypeObject
-    //         let types = ctx.type_()
-    //         for (let i = 0; i < types.length - 1; i++) {
-    //             declaredParameterTypes[i] = this.visit(types[i])(ce)
-    //         }
-    //         declaredReturnType = this.visit(types[types.length - 1])(ce)
-    //         let allNames = ctx.NAME()
-    //         let parameterName: TypeClosure[] = []
-    //         for (let i = 1; i < allNames.length; i++) {
-    //             parameterName[i - 1] = {name:allNames[i].getText(), type: declaredParameterTypes[i - 1].type, dropped: false,
-    //                 mutable:false, parameterType:declaredParameterTypes[i - 1].parameterType,
-    //                 returnType: declaredParameterTypes[i - 1].returnType, borrowState:{mutableBorrows:0, immutableBorrows:0}, moved: false}
-    //         }
-    //         let e = this.compile_time_environment_extend(parameterName, ce)
-    //         let actualReturnType = this.returnTypeFinder.visit(ctx.block())(e)
-    
-    //         if (this.deepEqual(actualReturnType, declaredReturnType)) {
-    //             // Store the function body and parameter names
-    //             const functionName = ctx.NAME()[0].getText();
-    //             const functionClosure = this.compile_time_environment_type_look_up(ce, functionName);
-    //             functionClosure.block = ctx.block();
-                
-    //             // Store parameter names for later use
-    //             functionClosure.paramNames = [];
-    //             for (let i = 1; i < allNames.length; i++) {
-    //                 functionClosure.paramNames.push(allNames[i].getText());
-    //             }
-                
-    //             return { type: "function", parameterTypes: declaredParameterTypes, returnTypes: declaredReturnType }
-    //         } else {
-    //             throw new Error(`Mismatch in return type, expected: ${JSON.stringify(declaredReturnType)}, but got ${JSON.stringify(actualReturnType)}`)
-    //         }
-    //     }
-    // }
     visitFunctionDecl(ctx: FunctionDeclContext): CompileTimeTypeEnvironmentToType {
         return ce => {
             let declaredParameterTypes: TypeObject[] = [];
             let declaredReturnType: TypeObject;
             let types = ctx.type_();
             
-            // Parse parameter types
             for (let i = 0; i < types.length - 1; i++) {
                 declaredParameterTypes[i] = this.visit(types[i])(ce);
             }
             
-            // Parse return type
             declaredReturnType = this.visit(types[types.length - 1])(ce);
-            
-            // Store function information in the type closure
             const functionName = ctx.NAME()[0].getText();
             const functionClosure = this.compile_time_environment_type_look_up(ce, functionName);
-            
-            // Store the function body
             functionClosure.block = ctx.block();
-            
-            // Store parameter names
             functionClosure.paramNames = [];
             for (let i = 1; i < ctx.NAME().length; i++) {
                 functionClosure.paramNames.push(ctx.NAME()[i].getText());
             }
             
-            // Return function type
             return { 
                 type: "function", 
                 parameterType: declaredParameterTypes, 
@@ -350,35 +277,6 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
             };
         }
     }
-    // visitFunctionApp(ctx: FunctionAppContext) : CompileTimeTypeEnvironmentToType {
-    //     return ce => {
-    //         let functionName= ctx.NAME().getText()
-    //         let functionType = this.compile_time_environment_type_look_up(ce, functionName)
-    //         if (functionType.type !== "function") {
-    //             throw new Error(`Call to non-function object : ${functionName} type : ${JSON.stringify(functionType)}`)
-    //         } else {
-    //             let expectedParameterTypes = functionType.parameterType
-    //             let actualParameters = ctx.expression()
-    //             if (actualParameters.length !== expectedParameterTypes.length) {
-    //                 throw new Error(`Incorrect number of argument. Expect ${expectedParameterTypes.length},
-    //                  but got ${actualParameters.length}`)
-    //             } else {
-    //                 for (let i = 0; i < expectedParameterTypes.length; i++) {
-    //                     let expectedParameterType: TypeObject = expectedParameterTypes[i]
-    //                     let actualParameterType = this.visit(actualParameters[i])(ce)
-    //                     if (actualParameters[i] instanceof VariableContext) {}
-    //                     if (this.deepEqual(expectedParameterType, actualParameterType)) {
-
-    //                     } else {
-    //                         throw new Error(`Type mismatch in argument ${i} of call to ${functionName}
-    //                          Expected ${JSON.stringify(actualParameterType)} type ${JSON.stringify(expectedParameterType)}`)
-    //                     }
-    //                 }
-    //                 return functionType.returnType
-    //             }
-    //         }
-    //     }
-    // }
 
     visitFunctionApp(ctx: FunctionAppContext): CompileTimeTypeEnvironmentToType {
         return ce => {
@@ -401,11 +299,9 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                 if (actualParameters.length !== expectedParameterTypes.length) {
                     throw new Error(`Incorrect number of arguments. Expected ${expectedParameterTypes.length}, but got ${actualParameters.length}`);
                 } else {
-                    // Create a new environment for parameter validation
                     let parameterEnvironment: TypeClosure[] = [];
-                    let parameterBorrowMap = new Map(); // Track which variables are borrowed by which parameters
+                    let parameterBorrowMap = new Map(); 
                     
-                    // Check each parameter and handle special cases
                     for (let i = 0; i < expectedParameterTypes.length; i++) {
                         let expectedParameterType: TypeObject = expectedParameterTypes[i];
                         let actualParameter = actualParameters[i];
@@ -415,17 +311,14 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                             throw new Error(`Type mismatch in argument ${i} of call to ${functionName}. Expected ${JSON.stringify(expectedParameterType)}, got ${JSON.stringify(actualParameterType)}`);
                         }
                         
-                        // Create parameter closure with proper parameter name from function declaration
                         const paramName = functionType.paramNames && functionType.paramNames[i] 
                             ? functionType.paramNames[i] 
                             : `param${i}`;
                         
-                        // Handle different parameter cases
                         if (actualParameter instanceof VariableContext) {
                             const argName = (actualParameter as VariableContext).NAME().getText();
                             const argVar = this.compile_time_environment_type_look_up(ce, argName);
                             
-                            // Add to parameter environment with appropriate state
                             parameterEnvironment.push({
                                 name: paramName,
                                 type: argVar.type,
@@ -433,11 +326,9 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                                 moved: false,
                                 mutable: argVar.mutable,
                                 borrowState: {mutableBorrows: 0, immutableBorrows: 0},
-                                // For non-primitive types, track that the value is moved to the parameter
                                 borrowFrom: argVar.type !== 'int' && argVar.type !== 'bool' ? argVar : undefined
                             });
                             
-                            // If non-primitive value, mark as moved
                             if (argVar.type !== 'int' && argVar.type !== 'bool' && !argVar.type.startsWith('&')) {
                                 argVar.moved = true;
                             }
@@ -445,7 +336,6 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                             const argName = (actualParameter as BorrowContext).NAME().getText();
                             const argVar = this.compile_time_environment_type_look_up(ce, argName);
                             
-                            // Add to parameter environment as an immutable reference
                             parameterEnvironment.push({
                                 name: paramName,
                                 type: `&${argVar.type}`,
@@ -456,16 +346,12 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                                 borrowFrom: argVar
                             });
                             
-                            // Update the borrow state of the original variable
                             argVar.borrowState.immutableBorrows++;
                             parameterBorrowMap.set(i, {variable: argVar, mutable: false});
                         } 
                         else if (actualParameter instanceof MutBorrowContext) {
                             const argName = (actualParameter as MutBorrowContext).NAME().getText();
                             const argVar = this.compile_time_environment_type_look_up(ce, argName);
-                            console.log(util.inspect(argVar, true, null, true));
-                            
-                            // Add to parameter environment as a mutable reference
                             parameterEnvironment.push({
                                 name: paramName,
                                 type: `&mut ${argVar.type}`,
@@ -476,7 +362,6 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                                 borrowFrom: argVar
                             });
                             
-                            // Update the borrow state of the original variable
                             argVar.borrowState.mutableBorrows++;
                             parameterBorrowMap.set(i, {variable: argVar, mutable: true});
                         } 
@@ -493,21 +378,15 @@ export class SimpleLangTypeChecker extends AbstractParseTreeVisitor<CompileTimeT
                         }
                     }
                     
-                    // Create a new extended environment with current context
                     let functionCallEnv = this.compile_time_environment_extend(parameterEnvironment, ce);
                     
-                    // Recheck the function body with the current context if available
                     if (functionType.block) {
-                        // Recheck the function body with the new environment
                         let recheckedReturnType = this.returnTypeFinder.visit(functionType.block)(functionCallEnv);
-                        
-                        // Ensure the return type is still valid
                         if (!this.deepEqual(recheckedReturnType.returnType, functionType.returnType)) {
                             throw new Error(`Expected return type ${JSON.stringify(functionType.returnType)}, but got ${JSON.stringify(recheckedReturnType.returnType)}`);
                         }
                     }
                     
-                    // Release any borrows when function returns
                     parameterBorrowMap.forEach((borrowed, paramIndex) => {
                         if (borrowed.mutable) {
                             borrowed.variable.borrowState.mutableBorrows--;
